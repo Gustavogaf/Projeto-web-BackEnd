@@ -1,47 +1,39 @@
-
-package com.example.demo.Repository;
+// src/test/java/com/example/demo/Repository/EsporteRepositoryTest.java
+package com.example.demo;
 
 import com.example.demo.Model.Esporte;
+import com.example.demo.Repository.EsporteRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase; // <-- IMPORTE AQUI
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // <-- ADICIONE ESTA LINHA
 public class EsporteRepositoryTest {
-
-    @Autowired
-    private TestEntityManager entityManager; // Um helper para manipular entidades no teste
 
     @Autowired
     private EsporteRepository esporteRepository;
 
     @Test
     public void quandoSalvarUmEsporte_entaoDeveEncontraLoPeloNome() {
-        // 1. Cenário
+        // Cenário
         Esporte novoEsporte = new Esporte("Futsal", 5, 10);
 
-        // 2. Ação
-        entityManager.persist(novoEsporte); // Salva o esporte no banco de dados de teste
-        entityManager.flush(); // Garante que a operação foi executada
+        // Ação
+        esporteRepository.save(novoEsporte);
 
-        // 3. Verificação
-        // Busca o esporte que acabamos de salvar
+        // Verificação
         Esporte esporteEncontrado = esporteRepository.findById(novoEsporte.getId()).orElse(null);
-
-        // Afirma que o esporte encontrado não é nulo e que o nome é o esperado
         assertThat(esporteEncontrado).isNotNull();
-        assertThat(esporteEncontrado.getNome()).isEqualTo(novoEsporte.getNome());
+        assertThat(esporteEncontrado.getNome()).isEqualTo("Futsal");
     }
 
     @Test
     public void quandoExistsByNome_entaoDeveRetornarVerdadeiro() {
         // Cenário
-        Esporte esporte = new Esporte("Voleibol", 6, 12);
-        entityManager.persist(esporte);
-        entityManager.flush();
+        esporteRepository.save(new Esporte("Voleibol", 6, 12));
 
         // Ação
         boolean existe = esporteRepository.existsByNome("Voleibol");
