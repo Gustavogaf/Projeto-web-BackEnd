@@ -59,111 +59,88 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 ### 4.1. Administrador
 
 #### `POST /api/admin/coordenadores`
-* **Descrição**: Cadastra um novo coordenador de curso no sistema. Esta é uma rota privilegiada.
-* **Corpo da Requisição (JSON)**:
-    ```json
-    {
-      "matricula": "coordSI01",
-      "nome": "Prof. Coordenador de SI",
-      "senha": "senhaSegura"
-    }
-    ```
+* **Descrição**: Cadastra um novo coordenador de curso no sistema.
+* **Corpo da Requisição**: Objeto JSON com `matricula`, `nome` e `senha`.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do coordenador cadastrado.
+
+#### `GET /api/admin/coordenadores`
+* **Descrição**: Lista todos os coordenadores cadastrados no sistema.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
 
 ---
 
-### 4.2. Esportes
+### 4.2. Cursos
+
+#### `POST /api/cursos`
+* **Descrição**: Cadastra um novo curso.
+* **Corpo da Requisição**: Objeto JSON com `nome` e `categoria` (INTEGRADO, SUPERIOR, SUBSEQUENTE).
+* **Resposta de Sucesso (201 CREATED)**: O objeto do curso cadastrado.
+
+#### `GET /api/cursos`
+* **Descrição**: Lista todos os cursos cadastrados.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `CursoResponseDTO`.
+
+---
+
+### 4.3. Esportes
 
 #### `POST /api/esportes`
 * **Descrição**: Cadastra um novo esporte no sistema.
-* **Corpo da Requisição (JSON)**:
-    ```json
-    {
-      "nome": "Natação",
-      "minAtletas": 1,
-      "maxAtletas": 1
-    }
-    ```
+* **Corpo da Requisição**: Objeto JSON com `nome`, `minAtletas` e `maxAtletas`.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do esporte cadastrado.
 
----
-
-### 4.3. Coordenadores
-
-#### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
-* **Descrição**: Permite que um coordenador cadastrado cadastre um novo técnico.
-* **Parâmetros na URL**:
-    * `matriculaCoordenador`: A matrícula do coordenador que está realizando a operação.
-* **Corpo da Requisição (JSON)**:
-    ```json
-    {
-      "matricula": "tec001",
-      "nome": "Professor Silva",
-      "senha": "senha123"
-    }
-    ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do técnico cadastrado.
+#### `GET /api/esportes`
+* **Descrição**: Lista todos os esportes cadastrados.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EsporteResponseDTO`.
 
 ---
 
 ### 4.4. Técnicos
 
+#### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
+* **Descrição**: Permite que um coordenador cadastrado cadastre um novo técnico.
+* **Corpo da Requisição**: Objeto JSON com `matricula`, `nome` e `senha`.
+* **Resposta de Sucesso (201 CREATED)**: O objeto do técnico cadastrado.
+
+#### `GET /api/tecnicos`
+* **Descrição**: Lista todos os técnicos cadastrados.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
+
+---
+
+### 4.5. Equipes e Atletas
+
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
 * **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe.
-* **Parâmetros na URL**:
-    * `matriculaTecnico`: A matrícula do técnico que está cadastrando a equipe.
-* **Corpo da Requisição (JSON)**:
-    ```json
-    {
-      "equipe": {
-        "nome": "Os Invencíveis",
-        "curso": { "id": 1 },
-        "esporte": { "id": 1 }
-      },
-      "matriculasAtletas": ["atl001", "atl002", "atl003"]
-    }
-    ```
+* **Corpo da Requisição**: Objeto `CadastroEquipeRequest` contendo os dados da equipe e a lista de matrículas dos atletas.
 * **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
 
----
+#### `GET /api/equipes`
+* **Descrição**: Lista todas as equipes cadastradas com seus detalhes.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EquipeResponseDTO`.
 
-### 4.5. Árbitros
-
-#### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
-* **Descrição**: Permite que um árbitro registre o placar final de uma partida.
-* **Parâmetros na URL**:
-    * `matriculaArbitro`: A matrícula do árbitro.
-    * `partidaId`: O ID da partida a ser atualizada.
-* **Corpo da Requisição (JSON)**:
-    ```json
-    {
-      "placarA": 25,
-      "placarB": 20
-    }
-    ```
-* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
+#### `GET /api/atletas`
+* **Descrição**: Lista todos os atletas cadastrados.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `AtletaResponseDTO`.
 
 ---
 
-### 4.6. Torneios
+### 4.6. Torneio e Partidas
 
 #### `POST /api/torneios/iniciar`
 * **Descrição**: Inicia um novo torneio para um esporte e categoria. Gera os grupos e as partidas da fase inicial.
-* **Corpo da Requisição (JSON)**:
-    ```json
-    {
-      "esporteId": 1,
-      "categoria": "SUPERIOR"
-    }
-    ```
+* **Corpo da Requisição**: Objeto JSON com `esporteId` e `categoria`.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do torneio criado.
 
+#### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
+* **Descrição**: Permite que um árbitro registre o placar final de uma partida, atualizando os pontos das equipes.
+* **Corpo da Requisição**: Objeto JSON com `placarA` e `placarB`.
+* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
+
 #### `POST /api/torneios/{torneioId}/avancar-fase`
-* **Descrição**: Verifica a fase atual de um torneio. Se todos os jogos da fase estiverem concluídos, gera as partidas da próxima fase do mata-mata.
-* **Parâmetros na URL**:
-    * `torneioId`: O ID do torneio a ser avançado.
-* **Corpo da Requisição**: Vazio.
-* **Resposta de Sucesso**:
-    * **201 CREATED**: Retorna uma lista com as novas partidas geradas para a próxima fase.
-    * **200 OK**: Retorna a mensagem "Torneio finalizado! Campeão determinado." se a última fase (a final) foi concluída.
-* **Resposta de Erro (400 BAD_REQUEST)**: Retorna a mensagem "Ainda existem partidas agendadas. A fase atual não foi concluída." se a fase atual não terminou.
+* **Descrição**: Verifica a fase atual de um torneio e, se concluída, gera as partidas da próxima fase do mata-mata.
+* **Resposta de Sucesso**: `201 CREATED` com a lista de novas partidas, ou `200 OK` com a mensagem de torneio finalizado.
+
+#### `GET /api/torneios`
+* **Descrição**: Lista todos os torneios iniciados com seus grupos e equipes.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `TorneioResponseDTO`.
