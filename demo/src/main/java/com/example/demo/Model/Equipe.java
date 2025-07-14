@@ -2,6 +2,7 @@
 package com.example.demo.Model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -11,28 +12,42 @@ public class Equipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne // Muitas equipes podem ser de um mesmo curso
+    // Adicione este campo se ele não existir
+    @Column(nullable = false)
+    private String nome;
+
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Curso curso;
 
-    @ManyToOne // Muitas equipes podem ser de um mesmo esporte
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Esporte esporte;
-    
-    @OneToOne // Cada equipe tem um único técnico responsável
+
+    @OneToOne
     @JoinColumn(nullable = false)
     private Tecnico tecnico;
 
-    @OneToMany(mappedBy = "equipe") // Uma equipe tem muitos atletas
-    private List<Atleta> atletas;
+    @OneToMany(mappedBy = "equipe")
+    private List<Atleta> atletas = new ArrayList<>();
 
-    // Construtores, Getters e Setters
+    // --- GARANTA QUE OS GETTERS E SETTERS ESTÃO COMPLETOS ---
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    // Certifique-se de que este método está implementado corretamente
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public Curso getCurso() {
