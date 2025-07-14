@@ -56,20 +56,29 @@ public class PartidaFluxoTest {
         esporteRepository.deleteAll();
 
         // --- CENÁRIO INICIAL ---
-        // 1. Criar dados base (curso, esporte, tecnico)
-        Curso curso = cursoRepository.save(new Curso("Sistemas de Informação", CategoriaCurso.SUPERIOR));
+        // 1. Criar dados base (curso, esporte, tecnico A)
+        Curso cursoA = cursoRepository.save(new Curso("Sistemas de Informação", CategoriaCurso.SUPERIOR));
         Esporte esporte = esporteRepository.save(new Esporte("Vôlei", 6, 12));
-        Tecnico tecnico = new Tecnico();
-        tecnico.setMatricula("tecVolei");
-        tecnico.setNome("Bernardinho");
-        tecnico.setSenha("123");
-        tecnico.setTipo(TipoUsuario.TECNICO);
-        usuarioRepository.save(tecnico);
+        Tecnico tecnicoA = new Tecnico();
+        tecnicoA.setMatricula("tecVoleiA");
+        tecnicoA.setNome("Bernardinho");
+        tecnicoA.setSenha("123");
+        tecnicoA.setTipo(TipoUsuario.TECNICO);
+        usuarioRepository.save(tecnicoA);
 
-        // 2. Criar duas equipes
-        Equipe equipeA = criarEquipe("Equipe A", curso, esporte, tecnico, 1);
-        Equipe equipeB = criarEquipe("Equipe B", cursoRepository.save(new Curso("Engenharia Civil", CategoriaCurso.SUPERIOR)), esporte, tecnico, 2);
+        // Criar um segundo técnico para a outra equipe
+        Tecnico tecnicoB = new Tecnico();
+        tecnicoB.setMatricula("tecVoleiB");
+        tecnicoB.setNome("Zé Roberto");
+        tecnicoB.setSenha("456");
+        tecnicoB.setTipo(TipoUsuario.TECNICO);
+        usuarioRepository.save(tecnicoB);
+        Curso cursoB = cursoRepository.save(new Curso("Engenharia Civil", CategoriaCurso.SUPERIOR));
 
+        // 2. Criar duas equipes com técnicos DIFERENTES
+        Equipe equipeA = criarEquipe("Equipe A", cursoA, esporte, tecnicoA, 1);
+        Equipe equipeB = criarEquipe("Equipe B", cursoB, esporte, tecnicoB, 2);
+        // ***** FIM DA CORREÇÃO *****
         equipeRepository.save(equipeA); // Salva a equipe A no banco
         equipeRepository.save(equipeB); // Salva a equipe B no banco
 
