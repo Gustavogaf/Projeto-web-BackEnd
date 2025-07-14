@@ -1,6 +1,7 @@
 // src/main/java/com/example/demo/Controller/TecnicoController.java
 package com.example.demo.Controller;
 
+import com.example.demo.Model.Atleta;
 import com.example.demo.Model.Equipe;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Service.TecnicoService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.demo.Controller.dto.AtletaResponseDTO;
 import com.example.demo.Controller.dto.CadastroEquipeRequest;
 import com.example.demo.Controller.dto.UsuarioResponseDTO;
 
@@ -46,5 +48,19 @@ public class TecnicoController {
                 .map(UsuarioResponseDTO::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{matriculaTecnico}/atletas")
+    public ResponseEntity<?> cadastrarAtleta(
+            @PathVariable String matriculaTecnico,
+            @RequestBody Atleta novoAtleta) {
+
+        try {
+            Atleta atletaSalvo = tecnicoService.cadastrarAtleta(matriculaTecnico, novoAtleta);
+            // Retorna o DTO do atleta criado (reutilizando o AtletaResponseDTO)
+            return new ResponseEntity<>(new AtletaResponseDTO(atletaSalvo), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 }

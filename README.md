@@ -59,7 +59,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 ### 4.1. Administrador
 
 #### `POST /api/admin/coordenadores`
-* **Descrição**: Cadastra um novo coordenador de curso no sistema.
+* **Descrição**: Cadastra um novo coordenador de curso no sistema. Esta é uma rota privilegiada.
 * **Corpo da Requisição**: Objeto JSON com `matricula`, `nome` e `senha`.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do coordenador cadastrado.
 
@@ -110,8 +110,15 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ### 4.5. Equipes e Atletas
 
+#### `POST /api/tecnicos/{matriculaTecnico}/atletas`
+* **Descrição**: Permite que um técnico cadastre um novo atleta (aluno) no sistema.
+* **Parâmetros na URL**:
+    * `matriculaTecnico`: A matrícula do técnico que está realizando a operação.
+* **Corpo da Requisição**: Objeto JSON com `matricula`, `nome`, `apelido`, `telefone` e `senha`.
+* **Resposta de Sucesso (201 CREATED)**: O objeto do atleta cadastrado.
+
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
-* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe.
+* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe, associando atletas já existentes.
 * **Corpo da Requisição**: Objeto `CadastroEquipeRequest` contendo os dados da equipe e a lista de matrículas dos atletas.
 * **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
 

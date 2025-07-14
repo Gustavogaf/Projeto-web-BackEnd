@@ -61,4 +61,21 @@ public class TecnicoService {
     public List<Usuario> listarTodos() {
         return usuarioRepository.findByTipo(TipoUsuario.TECNICO);
     }
+
+    public Atleta cadastrarAtleta(String matriculaTecnico, Atleta novoAtleta) throws Exception {
+        // 1. VERIFICAR SE O SOLICITANTE É UM TÉCNICO
+        if (!usuarioRepository.existsById(matriculaTecnico) || usuarioRepository.findById(matriculaTecnico).get().getTipo() != TipoUsuario.TECNICO) {
+            throw new Exception("Apenas usuários do tipo TECNICO podem cadastrar atletas.");
+        }
+
+        // 2. VERIFICAR SE O NOVO ATLETA JÁ EXISTE
+        if (usuarioRepository.existsById(novoAtleta.getMatricula())) {
+            throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoAtleta.getMatricula());
+        }
+
+        // 3. DEFINIR O TIPO E SALVAR O NOVO ATLETA
+        novoAtleta.setTipo(TipoUsuario.ATLETA);
+        return usuarioRepository.save(novoAtleta);
+    }
+
 }
