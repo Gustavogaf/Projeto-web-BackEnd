@@ -23,6 +23,63 @@ public class TorneioService {
     @Autowired
     private PartidaRepository partidaRepository;
 
+    public List<Partida> avancarFase(Long torneioId) throws Exception {
+        // 1. VERIFICAR SE A FASE ATUAL REALMENTE TERMINOU
+        // Buscamos todas as partidas do torneio, ordenadas pela data
+        List<Partida> todasAsPartidas = partidaRepository.findByTorneioIdOrderByDataHoraDesc(torneioId);
+        
+        boolean existePartidaAgendada = todasAsPartidas.stream()
+                .anyMatch(p -> p.getStatus() == StatusPartida.AGENDADA);
+
+        if (existePartidaAgendada) {
+            throw new Exception("Ainda existem partidas agendadas. A fase atual não foi concluída.");
+        }
+
+        // 2. IDENTIFICAR A ÚLTIMA FASE JOGADA E OS VENCEDORES
+        // Pegamos a data da última partida jogada
+        LocalDateTime ultimaData = todasAsPartidas.get(0).getDataHora();
+        
+        List<Equipe> vencedores = new ArrayList<>();
+        for (Partida p : todasAsPartidas) {
+            if (p.getDataHora().equals(ultimaData)) { // Filtra apenas as partidas da última rodada
+                if (p.getPlacarEquipeA() > p.getPlacarEquipeB()) {
+                    vencedores.add(p.getEquipeA());
+                } else if (p.getPlacarEquipeB() > p.getPlacarEquipeA()) {
+                    vencedores.add(p.getEquipeB());
+                }
+                // Em caso de empate no mata-mata, a lógica precisaria ser mais complexa (pênaltis, etc.)
+                // Por simplicidade, assumimos que não haverá empates no mata-mata.
+            }
+        }
+
+        // 3. VERIFICAR SE HÁ UM CAMPEÃO
+        if (vencedores.size() == 1) {
+            // Lógica para declarar o campeão pode ser adicionada aqui
+            System.out.println("Temos um campeão! Equipe: " + vencedores.get(0).getNome());
+            return new ArrayList<>(); // Retorna uma lista vazia, pois não há novas partidas
+        }
+
+        // 4. GERAR A PRÓXIMA FASE
+        Collections.shuffle(vencedores); // Sorteia os confrontos
+        List<Partida> proximaFase = new ArrayList<>();
+        LocalDateTime proximaData = ultimaData.plusDays(7); // Marca a próxima fase para uma semana depois
+
+        for (int i = 0; i < vencedores.size() / 2; i++) {
+            Partida novaPartida = new Partida();
+            novaPartida.setEquipeA(vencedores.get(i * 2));
+            novaPartida.setEquipeB(vencedores.get(i * 2 + 1));
+            novaPartida.setDataHora(proximaData);
+            // Associar a partida ao torneio
+            Torneio torneio = torneioRepository.findById(torneioId).get();
+            novaPartida.setTorneio(torneio); // Precisaremos adicionar o campo 'torneio' na entidade Partida
+            
+            proximaFase.add(novaPartida);
+            proximaData = proximaData.plusHours(2);
+        }
+
+        return partidaRepository.saveAll(proximaFase);
+    }
+
     public Torneio iniciarFaseDeGrupos(Esporte esporte, CategoriaCurso categoria) throws Exception {
         // 1. BUSCAR EQUIPES INSCRITAS
         List<Equipe> equipesInscritas = equipeRepository.findByEsporteAndCurso_Categoria(esporte, categoria);

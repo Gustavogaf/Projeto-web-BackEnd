@@ -19,6 +19,9 @@ public class Partida {
     @JoinColumn(nullable = false)
     private Equipe equipeB;
 
+     @ManyToOne
+    private Torneio torneio;
+
     private Integer placarEquipeA;
     private Integer placarEquipeB;
 
@@ -89,4 +92,7 @@ public class Partida {
     public void setStatus(StatusPartida status) {
         this.status = status;
     }
+
+    public Torneio getTorneio() { return torneio; }
+    public void setTorneio(Torneio torneio) { this.torneio = torneio; }
 }
