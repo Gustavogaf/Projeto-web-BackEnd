@@ -56,14 +56,35 @@ public class TecnicoService {
                 " deve ser entre " + esporte.getMinAtletas() + " e " + esporte.getMaxAtletas() + ".");
     }
 
-        // 5. CRIAR A NOVA EQUIPE COM OS DADOS CORRETOS
     Equipe novaEquipe = new Equipe();
-    novaEquipe.setNome(equipeDadosRequest.getNome());
-    novaEquipe.setTecnico(tecnico);
-    novaEquipe.setCurso(curso); // Associando o objeto Curso completo
-    novaEquipe.setEsporte(esporte); // Associando o objeto Esporte completo
+        novaEquipe.setNome(equipeDadosRequest.getNome());
+        novaEquipe.setTecnico(tecnico);
+        novaEquipe.setCurso(curso);
+        novaEquipe.setEsporte(esporte);
+        Equipe equipeSalva = equipeRepository.save(novaEquipe);
+
+       // 5. BUSCAR, VALIDAR E ATUALIZAR OS ATLETAS
+        List<Atleta> atletasParaSalvar = new ArrayList<>();
+        for (String matriculaAtleta : matriculasAtletas) {
+            Usuario usuario = usuarioRepository.findById(matriculaAtleta)
+                    .orElseThrow(() -> new Exception("Atleta com a matrícula '" + matriculaAtleta + "' não encontrado."));
+
+            if (usuario.getTipo() != TipoUsuario.ATLETA) {
+                throw new Exception("Usuário com matrícula '" + matriculaAtleta + "' não é um atleta.");
+            }
+
+            Atleta atleta = (Atleta) usuario;
+            atleta.setEquipe(equipeSalva); // Associa o atleta à equipe JÁ SALVA
+            atletasParaSalvar.add(atleta);
+        }
+
+        // Salva todos os atletas atualizados de uma vez.
+        usuarioRepository.saveAll(atletasParaSalvar);
+        
+        // Retorna a equipe salva e agora com os atletas corretamente associados.
         return equipeSalva;
-    }
+        
+        // ***** FIM DA CORREÇÃO DE LÓGICA *****
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findByTipo(TipoUsuario.TECNICO);
