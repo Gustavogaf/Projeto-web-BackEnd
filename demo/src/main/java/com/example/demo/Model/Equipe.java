@@ -31,6 +31,8 @@ public class Equipe {
     @OneToMany(mappedBy = "equipe")
     private List<Atleta> atletas = new ArrayList<>();
 
+    private int pontos = 0; // Novo campo para os pontos!
+
     // --- GARANTA QUE OS GETTERS E SETTERS ESTÃO COMPLETOS ---
 
     public Long getId() {
@@ -80,5 +82,13 @@ public class Equipe {
 
     public void setAtletas(List<Atleta> atletas) {
         this.atletas = atletas;
+    }
+
+    public int getPontos() {
+        return pontos;
+    }
+
+    public void setPontos(int pontos) {
+        this.pontos = pontos;
     }
 }

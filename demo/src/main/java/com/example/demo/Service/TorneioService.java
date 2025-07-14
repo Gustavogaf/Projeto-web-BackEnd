@@ -83,4 +83,40 @@ public class TorneioService {
             }
         }
     }
+    public List<Partida> gerarMataMata(Long torneioId) throws Exception {
+        Torneio torneio = torneioRepository.findById(torneioId)
+                .orElseThrow(() -> new Exception("Torneio não encontrado."));
+
+        List<Equipe> classificados = new ArrayList<>();
+        // 1. SELECIONAR OS 2 MELHORES DE CADA GRUPO
+        for (Grupo grupo : torneio.getGrupos()) {
+            grupo.getEquipes().sort((e1, e2) -> Integer.compare(e2.getPontos(), e1.getPontos())); // Ordena por pontos
+            
+            if (grupo.getEquipes().size() >= 2) {
+                classificados.add(grupo.getEquipes().get(0));
+                classificados.add(grupo.getEquipes().get(1));
+            } else if (grupo.getEquipes().size() == 1) {
+                classificados.add(grupo.getEquipes().get(0));
+            }
+        }
+
+        // 2. EMBARALHAR OS CLASSIFICADOS PARA O SORTEIO DAS CHAVES
+        Collections.shuffle(classificados);
+
+        // 3. GERAR AS PARTIDAS DO MATA-MATA
+        List<Partida> partidasMataMata = new ArrayList<>();
+        LocalDateTime dataPartidaFicticia = LocalDateTime.now().plusDays(7); // Marca para uma semana depois
+
+        for (int i = 0; i < classificados.size() / 2; i++) {
+            Partida partida = new Partida();
+            partida.setEquipeA(classificados.get(i*2));
+            partida.setEquipeB(classificados.get(i*2 + 1));
+            partida.setDataHora(dataPartidaFicticia);
+            
+            partidasMataMata.add(partida);
+            dataPartidaFicticia = dataPartidaFicticia.plusHours(2);
+        }
+
+        return partidaRepository.saveAll(partidasMataMata);
+    }
 }

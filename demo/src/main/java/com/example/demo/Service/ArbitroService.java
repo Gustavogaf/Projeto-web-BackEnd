@@ -2,6 +2,7 @@
 package com.example.demo.Service;
 
 import com.example.demo.Model.*;
+import com.example.demo.Repository.EquipeRepository;
 import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class ArbitroService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+     @Autowired
+    private EquipeRepository equipeRepository;
 
     public Partida registrarResultado(String matriculaArbitro, Long partidaId, int placarA, int placarB) throws Exception {
         // 1. VERIFICAR SE O SOLICITANTE É UM ÁRBITRO
@@ -40,7 +44,20 @@ public class ArbitroService {
         partida.setPlacarEquipeB(placarB);
         partida.setStatus(StatusPartida.FINALIZADA);
 
-        // 4. SALVAR A PARTIDA ATUALIZADA
+        Equipe equipeA = partida.getEquipeA();
+        Equipe equipeB = partida.getEquipeB();
+
+        if (placarA > placarB) { // Vitória da Equipe A
+            equipeA.setPontos(equipeA.getPontos() + 3);
+        } else if (placarB > placarA) { // Vitória da Equipe B
+            equipeB.setPontos(equipeB.getPontos() + 3);
+        } else { // Empate
+            equipeA.setPontos(equipeA.getPontos() + 1);
+            equipeB.setPontos(equipeB.getPontos() + 1);
+        }
+        equipeRepository.save(equipeA);
+        equipeRepository.save(equipeB);
+
         return partidaRepository.save(partida);
     }
 }
