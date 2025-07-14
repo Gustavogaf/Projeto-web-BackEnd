@@ -56,7 +56,23 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ---
 
-### 4.1. Esportes
+### 4.1. Administrador
+
+#### `POST /api/admin/coordenadores`
+* **Descrição**: Cadastra um novo coordenador de curso no sistema. Esta é uma rota privilegiada.
+* **Corpo da Requisição (JSON)**:
+    ```json
+    {
+      "matricula": "coordSI01",
+      "nome": "Prof. Coordenador de SI",
+      "senha": "senhaSegura"
+    }
+    ```
+* **Resposta de Sucesso (201 CREATED)**: O objeto do coordenador cadastrado.
+
+---
+
+### 4.2. Esportes
 
 #### `POST /api/esportes`
 * **Descrição**: Cadastra um novo esporte no sistema.
@@ -72,7 +88,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ---
 
-### 4.2. Coordenadores
+### 4.3. Coordenadores
 
 #### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
 * **Descrição**: Permite que um coordenador cadastrado cadastre um novo técnico.
@@ -90,7 +106,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ---
 
-### 4.3. Técnicos
+### 4.4. Técnicos
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
 * **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe.
@@ -111,7 +127,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ---
 
-### 4.4. Árbitros
+### 4.5. Árbitros
 
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
 * **Descrição**: Permite que um árbitro registre o placar final de uma partida.
@@ -129,7 +145,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ---
 
-### 4.5. Torneios
+### 4.6. Torneios
 
 #### `POST /api/torneios/iniciar`
 * **Descrição**: Inicia um novo torneio para um esporte e categoria. Gera os grupos e as partidas da fase inicial.
