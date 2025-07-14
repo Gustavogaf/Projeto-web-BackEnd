@@ -59,12 +59,19 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 ### 4.1. Administrador
 
 #### `POST /api/admin/coordenadores`
-* **Descrição**: Cadastra um novo coordenador de curso no sistema. Esta é uma rota privilegiada.
-* **Corpo da Requisição**: Objeto JSON com `matricula`, `nome` e `senha`.
+* **Descrição**: Cadastra um novo coordenador de curso no sistema.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "matricula": "coordSI01",
+    "nome": "Prof. Coordenador de SI",
+    "senha": "senhaSegura"
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do coordenador cadastrado.
 
 #### `GET /api/admin/coordenadores`
-* **Descrição**: Lista todos os coordenadores cadastrados no sistema.
+* **Descrição**: Lista todos os coordenadores cadastrados.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
 
 ---
@@ -73,7 +80,13 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 #### `POST /api/cursos`
 * **Descrição**: Cadastra um novo curso.
-* **Corpo da Requisição**: Objeto JSON com `nome` e `categoria` (INTEGRADO, SUPERIOR, SUBSEQUENTE).
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "nome": "Engenharia de Software",
+    "categoria": "SUPERIOR"
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do curso cadastrado.
 
 #### `GET /api/cursos`
@@ -86,7 +99,14 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 #### `POST /api/esportes`
 * **Descrição**: Cadastra um novo esporte no sistema.
-* **Corpo da Requisição**: Objeto JSON com `nome`, `minAtletas` e `maxAtletas`.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "nome": "Natação",
+    "minAtletas": 1,
+    "maxAtletas": 1
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do esporte cadastrado.
 
 #### `GET /api/esportes`
@@ -99,7 +119,14 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 #### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
 * **Descrição**: Permite que um coordenador cadastrado cadastre um novo técnico.
-* **Corpo da Requisição**: Objeto JSON com `matricula`, `nome` e `senha`.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "matricula": "tec001",
+    "nome": "Professor Silva",
+    "senha": "senha123"
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do técnico cadastrado.
 
 #### `GET /api/tecnicos`
@@ -112,14 +139,31 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 #### `POST /api/tecnicos/{matriculaTecnico}/atletas`
 * **Descrição**: Permite que um técnico cadastre um novo atleta (aluno) no sistema.
-* **Parâmetros na URL**:
-    * `matriculaTecnico`: A matrícula do técnico que está realizando a operação.
-* **Corpo da Requisição**: Objeto JSON com `matricula`, `nome`, `apelido`, `telefone` e `senha`.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "matricula": "atl999",
+    "nome": "Novo Craque",
+    "apelido": "Fenômeno",
+    "telefone": "79999998888",
+    "senha": "senha123"
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do atleta cadastrado.
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
-* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe, associando atletas já existentes.
-* **Corpo da Requisição**: Objeto `CadastroEquipeRequest` contendo os dados da equipe e a lista de matrículas dos atletas.
+* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "equipe": {
+      "nome": "Os Invencíveis",
+      "curso": { "id": 1 },
+      "esporte": { "id": 1 }
+    },
+    "matriculasAtletas": ["atl001", "atl002", "atl003"]
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
 
 #### `GET /api/equipes`
@@ -136,16 +180,29 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 #### `POST /api/torneios/iniciar`
 * **Descrição**: Inicia um novo torneio para um esporte e categoria. Gera os grupos e as partidas da fase inicial.
-* **Corpo da Requisição**: Objeto JSON com `esporteId` e `categoria`.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "esporteId": 1,
+    "categoria": "SUPERIOR"
+  }
+  ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do torneio criado.
 
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
-* **Descrição**: Permite que um árbitro registre o placar final de uma partida, atualizando os pontos das equipes.
-* **Corpo da Requisição**: Objeto JSON com `placarA` e `placarB`.
+* **Descrição**: Permite que um árbitro registre o placar final de uma partida.
+* **Corpo da Requisição (Exemplo)**:
+  ```json
+  {
+    "placarA": 25,
+    "placarB": 20
+  }
+  ```
 * **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
 
 #### `POST /api/torneios/{torneioId}/avancar-fase`
 * **Descrição**: Verifica a fase atual de um torneio e, se concluída, gera as partidas da próxima fase do mata-mata.
+* **Corpo da Requisição**: Vazio.
 * **Resposta de Sucesso**: `201 CREATED` com a lista de novas partidas, ou `200 OK` com a mensagem de torneio finalizado.
 
 #### `GET /api/torneios`
