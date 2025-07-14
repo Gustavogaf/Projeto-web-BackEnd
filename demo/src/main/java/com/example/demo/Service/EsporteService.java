@@ -3,6 +3,9 @@ package com.example.demo.Service;
 
 import com.example.demo.Model.Esporte;
 import com.example.demo.Repository.EsporteRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,5 +29,9 @@ public class EsporteService {
         }
 
         return esporteRepository.save(esporte);
+    }
+
+    public List<Esporte> listarTodos() {
+        return esporteRepository.findAll();
     }
 }

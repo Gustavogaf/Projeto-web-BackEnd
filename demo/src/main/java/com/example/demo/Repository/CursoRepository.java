@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CursoRepository extends JpaRepository<Curso, Long> {
-    // Métodos de busca personalizados podem ser adicionados aqui no futuro
+    boolean existsByNome(String nome);
 }

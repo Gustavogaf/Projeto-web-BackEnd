@@ -176,4 +176,8 @@ public class TorneioService {
 
         return partidaRepository.saveAll(partidasMataMata);
     }
+
+    public List<Torneio> listarTodos() {
+        return torneioRepository.findAll();
+    }
 }

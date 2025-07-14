@@ -3,7 +3,11 @@ package com.example.demo.Service;
 
 import com.example.demo.Model.Coordenador;
 import com.example.demo.Model.TipoUsuario;
+import com.example.demo.Model.Usuario;
 import com.example.demo.Repository.UsuarioRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,5 +26,9 @@ public class AdminService {
         // 2. DEFINIR O TIPO E SALVAR O NOVO COORDENADOR
         novoCoordenador.setTipo(TipoUsuario.COORDENADOR);
         return usuarioRepository.save(novoCoordenador);
+    }
+
+    public List<Usuario> listarCoordenadores() {
+        return usuarioRepository.findByTipo(TipoUsuario.COORDENADOR);
     }
 }

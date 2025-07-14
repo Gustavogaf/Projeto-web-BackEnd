@@ -57,4 +57,8 @@ public class TecnicoService {
 
         return equipeSalva;
     }
+
+    public List<Usuario> listarTodos() {
+        return usuarioRepository.findByTipo(TipoUsuario.TECNICO);
+    }
 }
