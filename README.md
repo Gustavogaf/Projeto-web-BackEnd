@@ -68,16 +68,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "maxAtletas": 1
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**:
-    ```json
-    {
-      "id": 1,
-      "nome": "Natação",
-      "minAtletas": 1,
-      "maxAtletas": 1
-    }
-    ```
-* **Resposta de Erro (400 BAD_REQUEST)**: `string` com a mensagem de erro (ex: "Já existe um esporte cadastrado com o nome: Natação").
+* **Resposta de Sucesso (201 CREATED)**: O objeto do esporte cadastrado.
 
 ---
 
@@ -96,14 +87,13 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     }
     ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do técnico cadastrado.
-* **Resposta de Erro (400 BAD_REQUEST)**: `string` com a mensagem de erro.
 
 ---
 
 ### 4.3. Técnicos
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
-* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe, associando os atletas a ela.
+* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe.
 * **Parâmetros na URL**:
     * `matriculaTecnico`: A matrícula do técnico que está cadastrando a equipe.
 * **Corpo da Requisição (JSON)**:
@@ -118,7 +108,6 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     }
     ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
-* **Resposta de Erro (400 BAD_REQUEST)**: `string` com a mensagem de erro.
 
 ---
 
@@ -127,7 +116,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
 * **Descrição**: Permite que um árbitro registre o placar final de uma partida.
 * **Parâmetros na URL**:
-    * `matriculaArbitro`: A matrícula do árbitro que está registrando o resultado.
+    * `matriculaArbitro`: A matrícula do árbitro.
     * `partidaId`: O ID da partida a ser atualizada.
 * **Corpo da Requisição (JSON)**:
     ```json
@@ -136,15 +125,14 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "placarB": 20
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado com o placar e o novo status.
-* **Resposta de Erro (400 BAD_REQUEST)**: `string` com a mensagem de erro.
+* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
 
 ---
 
 ### 4.5. Torneios
 
 #### `POST /api/torneios/iniciar`
-* **Descrição**: Inicia um novo torneio para um esporte e categoria específicos. O sistema irá sortear os grupos e gerar todas as partidas da fase de grupos.
+* **Descrição**: Inicia um novo torneio para um esporte e categoria. Gera os grupos e as partidas da fase inicial.
 * **Corpo da Requisição (JSON)**:
     ```json
     {
@@ -152,5 +140,14 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "categoria": "SUPERIOR"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do torneio criado, contendo a estrutura de grupos e equipes.
-* **Resposta de Erro (400 BAD_REQUEST)**: `string` com a mensagem de erro (ex: "Não há equipes suficientes para iniciar um torneio...").
+* **Resposta de Sucesso (201 CREATED)**: O objeto do torneio criado.
+
+#### `POST /api/torneios/{torneioId}/avancar-fase`
+* **Descrição**: Verifica a fase atual de um torneio. Se todos os jogos da fase estiverem concluídos, gera as partidas da próxima fase do mata-mata.
+* **Parâmetros na URL**:
+    * `torneioId`: O ID do torneio a ser avançado.
+* **Corpo da Requisição**: Vazio.
+* **Resposta de Sucesso**:
+    * **201 CREATED**: Retorna uma lista com as novas partidas geradas para a próxima fase.
+    * **200 OK**: Retorna a mensagem "Torneio finalizado! Campeão determinado." se a última fase (a final) foi concluída.
+* **Resposta de Erro (400 BAD_REQUEST)**: Retorna a mensagem "Ainda existem partidas agendadas. A fase atual não foi concluída." se a fase atual não terminou.
