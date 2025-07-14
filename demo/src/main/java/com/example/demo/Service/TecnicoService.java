@@ -2,7 +2,9 @@
 package com.example.demo.Service;
 
 import com.example.demo.Model.*;
+import com.example.demo.Repository.CursoRepository;
 import com.example.demo.Repository.EquipeRepository;
+import com.example.demo.Repository.EsporteRepository;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,14 @@ public class TecnicoService {
     @Autowired
     private EquipeRepository equipeRepository;
 
+    @Autowired
+    private CursoRepository cursoRepository;
+
+    @Autowired
+    private EsporteRepository esporteRepository;
+
+    
+
     public Equipe cadastrarEquipe(String matriculaTecnico, Equipe novaEquipe, List<String> matriculasAtletas) throws Exception {
         // 1. VERIFICAR SE O SOLICITANTE É UM TÉCNICO
         Optional<Usuario> tecnicoOpt = usuarioRepository.findById(matriculaTecnico);
@@ -28,33 +38,30 @@ public class TecnicoService {
         Tecnico tecnico = (Tecnico) tecnicoOpt.get();
         novaEquipe.setTecnico(tecnico);
 
-        // 2. VERIFICAR SE O CURSO JÁ POSSUI UMA EQUIPE NO ESPORTE (Requisito 2)
-        if (equipeRepository.existsByCursoAndEsporte(novaEquipe.getCurso(), novaEquipe.getEsporte())) {
-            throw new Exception("O curso '" + novaEquipe.getCurso().getNome() + "' já possui uma equipe de '" + novaEquipe.getEsporte().getNome() + "'.");
-        }
+        // 2. CARREGAR AS ENTIDADES COMPLETAS DO BANCO DE DADOS
+    Curso curso = cursoRepository.findById(equipeDadosRequest.getCurso().getId())
+            .orElseThrow(() -> new Exception("Curso com o ID " + equipeDadosRequest.getCurso().getId() + " não encontrado."));
 
-        // 3. VERIFICAR A QUANTIDADE DE ATLETAS (Requisito 6)
-        Esporte esporte = novaEquipe.getEsporte();
-        if (matriculasAtletas.size() < esporte.getMinAtletas() || matriculasAtletas.size() > esporte.getMaxAtletas()) {
-            throw new Exception("A quantidade de atletas (" + matriculasAtletas.size() + ") para " + esporte.getNome() +
-                    " deve ser entre " + esporte.getMinAtletas() + " e " + esporte.getMaxAtletas() + ".");
-        }
+    Esporte esporte = esporteRepository.findById(equipeDadosRequest.getEsporte().getId())
+            .orElseThrow(() -> new Exception("Esporte com o ID " + equipeDadosRequest.getEsporte().getId() + " não encontrado."));
 
-        // 4. VERIFICAR SE OS ATLETAS ESTÃO CADASTRADOS E ADICIONÁ-LOS (Requisito 11)
-        for (String matriculaAtleta : matriculasAtletas) {
-            Optional<Usuario> atletaOpt = usuarioRepository.findById(matriculaAtleta);
-            if (atletaOpt.isEmpty() || atletaOpt.get().getTipo() != TipoUsuario.ATLETA) {
-                throw new Exception("Atleta com a matrícula '" + matriculaAtleta + "' não encontrado ou não é do tipo ATLETA.");
-            }
-            Atleta atleta = (Atleta) atletaOpt.get();
-            atleta.setEquipe(novaEquipe);
-            novaEquipe.getAtletas().add(atleta);
-        }
+    // 3. VERIFICAR SE O CURSO JÁ POSSUI UMA EQUIPE NO ESPORTE (usando os objetos completos)
+    if (equipeRepository.existsByCursoAndEsporte(curso, esporte)) {
+        throw new Exception("O curso '" + curso.getNome() + "' já possui uma equipe de '" + esporte.getNome() + "'.");
+    }
 
-        // 5. SALVAR A EQUIPE E ATUALIZAR OS ATLETAS
-        Equipe equipeSalva = equipeRepository.save(novaEquipe);
-        usuarioRepository.saveAll(novaEquipe.getAtletas()); // Atualiza a referência da equipe em cada atleta
+        // 4. VERIFICAR A QUANTIDADE DE ATLETAS (usando o minAtletas real do esporte)
+    if (matriculasAtletas.size() < esporte.getMinAtletas() || matriculasAtletas.size() > esporte.getMaxAtletas()) {
+        throw new Exception("A quantidade de atletas (" + matriculasAtletas.size() + ") para " + esporte.getNome() +
+                " deve ser entre " + esporte.getMinAtletas() + " e " + esporte.getMaxAtletas() + ".");
+    }
 
+        // 5. CRIAR A NOVA EQUIPE COM OS DADOS CORRETOS
+    Equipe novaEquipe = new Equipe();
+    novaEquipe.setNome(equipeDadosRequest.getNome());
+    novaEquipe.setTecnico(tecnico);
+    novaEquipe.setCurso(curso); // Associando o objeto Curso completo
+    novaEquipe.setEsporte(esporte); // Associando o objeto Esporte completo
         return equipeSalva;
     }
 
