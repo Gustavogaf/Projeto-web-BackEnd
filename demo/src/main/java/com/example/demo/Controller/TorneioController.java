@@ -12,18 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.demo.Controller.dto.IniciarTorneioRequest;
 
-// DTO para receber os dados para iniciar o torneio
-class IniciarTorneioRequest {
-    private Long esporteId;
-    private CategoriaCurso categoria;
-
-    // Getters e Setters
-    public Long getEsporteId() { return esporteId; }
-    public void setEsporteId(Long esporteId) { this.esporteId = esporteId; }
-    public CategoriaCurso getCategoria() { return categoria; }
-    public void setCategoria(CategoriaCurso categoria) { this.categoria = categoria; }
-}
 
 @RestController
 @RequestMapping("/api/torneios")

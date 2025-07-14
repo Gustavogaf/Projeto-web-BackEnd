@@ -9,18 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-// DTO (Data Transfer Object) para encapsular os dados da requisição
-class CadastroEquipeRequest {
-    private Equipe equipe;
-    private List<String> matriculasAtletas;
-
-    // Getters e Setters
-    public Equipe getEquipe() { return equipe; }
-    public void setEquipe(Equipe equipe) { this.equipe = equipe; }
-    public List<String> getMatriculasAtletas() { return matriculasAtletas; }
-    public void setMatriculasAtletas(List<String> matriculasAtletas) { this.matriculasAtletas = matriculasAtletas; }
-}
+import com.example.demo.Controller.dto.CadastroEquipeRequest;
 
 @RestController
 @RequestMapping("/api/tecnicos")

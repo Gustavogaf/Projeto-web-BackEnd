@@ -7,18 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.Controller.dto.PlacarRequest;
 
-// DTO para receber os dados do placar
-class PlacarRequest {
-    private int placarA;
-    private int placarB;
-
-    // Getters e Setters
-    public int getPlacarA() { return placarA; }
-    public void setPlacarA(int placarA) { this.placarA = placarA; }
-    public int getPlacarB() { return placarB; }
-    public void setPlacarB(int placarB) { this.placarB = placarB; }
-}
 
 @RestController
 @RequestMapping("/api/arbitros")

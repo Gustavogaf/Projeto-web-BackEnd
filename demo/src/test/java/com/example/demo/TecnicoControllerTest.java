@@ -1,7 +1,7 @@
 // src/test/java/com/example/demo/TecnicoControllerTest.java
 package com.example.demo;
 
-import com.example.demo.Controller.CadastroEquipeRequest; // Importe o DTO
+import com.example.demo.Controller.dto.CadastroEquipeRequest; // Importe o DTO
 import com.example.demo.Model.*;
 import com.example.demo.Service.TecnicoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
