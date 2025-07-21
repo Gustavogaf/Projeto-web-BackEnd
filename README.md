@@ -31,7 +31,7 @@ Este projeto foi desenvolvido como requisito para a disciplina de Web 1 do curso
 
 1.  No seu SQL Server, crie um banco de dados com o nome `Server_WEB`.
 2.  Habilite o modo de autenticação misto (SQL Server e Windows).
-3.  Crie um novo login (ex: `dev_web`) e dê a ele permissões sobre o banco `Server_WEB`.
+3.  Crie um novo login (ex: `sa`) e dê a ele permissões sobre o banco `Server_WEB`.
 4.  Abra o arquivo `src/main/resources/application.properties` e configure as credenciais do seu banco de dados:
 
     ```properties
@@ -57,11 +57,10 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ---
 
-### 4.1. Administrador
+### 4.1. Gestão de Administradores (`/api/admin`)
 
 #### `POST /api/admin/coordenadores`
-
-* **Descrição**: Cadastra um novo coordenador de curso no sistema.
+* **Descrição**: Cadastra um novo coordenador.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
@@ -73,16 +72,56 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do coordenador cadastrado.
 
 #### `GET /api/admin/coordenadores`
-
-* **Descrição**: Lista todos os coordenadores cadastrados.
+* **Descrição**: Lista todos os coordenadores.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
+
+#### `PUT /api/admin/coordenadores/{matricula}`
+* **Descrição**: Atualiza um coordenador.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "nome": "Nome Coordenador Atualizado",
+      "senha": "novaSenha123"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do coordenador atualizado.
+
+#### `DELETE /api/admin/coordenadores/{matricula}`
+* **Descrição**: Deleta um coordenador.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
+#### `POST /api/admin/arbitros`
+* **Descrição**: Cadastra um novo árbitro.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "matricula": "arb001",
+      "nome": "Árbitro Oficial",
+      "senha": "senhaArbitro"
+    }
+    ```
+* **Resposta de Sucesso (201 CREATED)**: O objeto do árbitro cadastrado.
+
+#### `PUT /api/admin/arbitros/{matricula}`
+* **Descrição**: Atualiza um árbitro.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+        "nome": "Juiz Atualizado",
+        "senha": "outraSenha"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do árbitro atualizado.
+
+#### `DELETE /api/admin/arbitros/{matricula}`
+* **Descrição**: Deleta um árbitro.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
-### 4.2. Cursos
+### 4.2. Gestão de Cursos (`/api/cursos`)
 
 #### `POST /api/cursos`
-
 * **Descrição**: Cadastra um novo curso.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -94,17 +133,30 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do curso cadastrado.
 
 #### `GET /api/cursos`
-
-* **Descrição**: Lista todos os cursos cadastrados.
+* **Descrição**: Lista todos os cursos.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `CursoResponseDTO`.
+
+#### `PUT /api/cursos/{id}`
+* **Descrição**: Atualiza um curso.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "nome": "Ciência da Computação",
+      "categoria": "SUPERIOR"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do curso atualizado.
+
+#### `DELETE /api/cursos/{id}`
+* **Descrição**: Deleta um curso.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
-### 4.3. Esportes
+### 4.3. Gestão de Esportes (`/api/esportes`)
 
 #### `POST /api/esportes`
-
-* **Descrição**: Cadastra um novo esporte no sistema.
+* **Descrição**: Cadastra um novo esporte.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
@@ -116,17 +168,30 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do esporte cadastrado.
 
 #### `GET /api/esportes`
-
-* **Descrição**: Lista todos os esportes cadastrados.
+* **Descrição**: Lista todos os esportes.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EsporteResponseDTO`.
+
+#### `PUT /api/esportes/{id}`
+* **Descrição**: Atualiza um esporte.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "minAtletas": 2,
+      "maxAtletas": 4
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do esporte atualizado.
+
+#### `DELETE /api/esportes/{id}`
+* **Descrição**: Deleta um esporte.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
-### 4.4. Técnicos
+### 4.4. Gestão de Técnicos
 
 #### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
-
-* **Descrição**: Permite que um coordenador cadastrado cadastre um novo técnico.
+* **Descrição**: Permite que um coordenador cadastre um novo técnico.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
@@ -137,33 +202,31 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do técnico cadastrado.
 
-#### `GET /api/tecnicos`
+#### `PUT /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
+* **Descrição**: Permite que um coordenador atualize um técnico.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "nome": "Técnico Atualizado",
+      "senha": "novaSenhaTecnico"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do técnico atualizado.
 
+#### `DELETE /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
+* **Descrição**: Permite que um coordenador delete um técnico (desde que não esteja em uma equipe).
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
+#### `GET /api/tecnicos`
 * **Descrição**: Lista todos os técnicos cadastrados.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
 
 ---
 
-### 4.5. Equipes e Atletas
-
-#### `POST /api/tecnicos/{matriculaTecnico}/atletas`
-
-* **Descrição**: Permite que um técnico cadastre um novo atleta (aluno) no sistema.
-* **Corpo da Requisição (Exemplo)**:
-    ```json
-    {
-      "matricula": "atl999",
-      "nome": "Novo Craque",
-      "apelido": "Fenômeno",
-      "telefone": "79999998888",
-      "senha": "senha123"
-    }
-    ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do atleta cadastrado.
+### 4.5. Gestão de Atletas e Equipes
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
-
-* **Descrição**: Permite que um técnico cadastrado cadastre uma nova equipe.
+* **Descrição**: Permite que um técnico cadastre uma nova equipe com seus atletas.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
@@ -177,23 +240,49 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
 
-#### `GET /api/equipes`
+#### `POST /api/tecnicos/{matriculaTecnico}/atletas`
+* **Descrição**: Permite que um técnico cadastre um novo atleta.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "matricula": "atl999",
+      "nome": "Novo Craque",
+      "apelido": "Fenômeno",
+      "telefone": "79999998888",
+      "senha": "senha123"
+    }
+    ```
+* **Resposta de Sucesso (201 CREATED)**: O objeto do atleta cadastrado.
 
-* **Descrição**: Lista todas as equipes cadastradas com seus detalhes.
+#### `PUT /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
+* **Descrição**: Permite que um técnico atualize os dados de um atleta.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "apelido": "Estrela",
+      "telefone": "79911112222"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do atleta atualizado.
+
+#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
+* **Descrição**: Permite que um técnico remova (desassocie) um atleta de sua equipe.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
+#### `GET /api/equipes`
+* **Descrição**: Lista todas as equipes.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EquipeResponseDTO`.
 
 #### `GET /api/atletas`
-
-* **Descrição**: Lista todos os atletas cadastrados.
+* **Descrição**: Lista todos os atletas.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `AtletaResponseDTO`.
 
 ---
 
-### 4.6. Torneios e Partidas
+### 4.6. Gestão de Torneios e Partidas
 
 #### `POST /api/torneios/iniciar`
-
-* **Descrição**: Inicia um novo torneio para um esporte e categoria. Gera os grupos e as partidas da fase inicial.
+* **Descrição**: Inicia um torneio, criando os grupos e as partidas da fase inicial.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
@@ -204,22 +293,18 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Resposta de Sucesso (201 CREATED)**: O objeto do torneio criado.
 
 #### `POST /api/torneios/{torneioId}/avancar-fase`
-
-* **Descrição**: Verifica a fase atual de um torneio e, se concluída, gera as partidas da próxima fase do mata-mata. Se necessário, sorteia um "bye" para equipes.
-* **Corpo da Requisição**: Vazio.
-* **Resposta de Sucesso**: `201 CREATED` com a lista de novas partidas, ou `200 OK` com a mensagem de torneio finalizado.
+* **Descrição**: Avança o torneio para a próxima fase do mata-mata.
+* **Resposta de Sucesso (201 CREATED)**: Lista de novas partidas ou mensagem de campeão.
 
 #### `GET /api/torneios`
-
-* **Descrição**: Lista todos os torneios iniciados com seus grupos e equipes.
+* **Descrição**: Lista todos os torneios.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `TorneioResponseDTO`.
 
 ---
 
-### 4.7. Árbitros
+### 4.7. Ações de Árbitros em Partidas
 
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
-
 * **Descrição**: Permite que um árbitro registre o placar final de uma partida.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -231,12 +316,11 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
 
 #### `POST /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/wo`
-
-* **Descrição**: Permite que um árbitro registre uma vitória por W.O. (Walkover) para uma equipe.
+* **Descrição**: Permite que um árbitro registre uma vitória por W.O.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
       "equipeVencedoraId": 1
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado com o status de W.O. e placar simbólico.
+* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
