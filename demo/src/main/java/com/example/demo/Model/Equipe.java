@@ -28,7 +28,7 @@ public class Equipe {
     @JoinColumn(nullable = false)
     private Tecnico tecnico;
 
-    @OneToMany(mappedBy = "equipe")
+    @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Atleta> atletas = new ArrayList<>();
 
     private int pontos = 0; // Novo campo para os pontos!

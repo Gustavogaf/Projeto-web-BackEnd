@@ -39,33 +39,33 @@ public class TorneioServiceTest {
     private CategoriaCurso categoria;
 
     @BeforeEach
-    void setUp() {
-        // Limpeza completa para garantir independência
-        partidaRepository.deleteAll();
-        torneioRepository.deleteAll();
-        equipeRepository.deleteAll();
-        usuarioRepository.deleteAll();
-        cursoRepository.deleteAll();
-        esporteRepository.deleteAll();
+void setUp() {
+    // Limpeza completa na ordem correta para evitar erros de constraint
+    partidaRepository.deleteAll();
+    torneioRepository.deleteAll();
+    equipeRepository.deleteAll(); // Agora deleta as equipes e seus atletas em cascata
+    usuarioRepository.deleteAll(); // Deleta os usuários restantes (Técnicos, Coordenadores, etc.)
+    cursoRepository.deleteAll();
+    esporteRepository.deleteAll();
 
-        // --- CENÁRIO INICIAL ---
-        // 1. Definir o esporte e a categoria do torneio
-        esporte = esporteRepository.save(new Esporte("Futsal", 5, 10));
-        categoria = CategoriaCurso.SUPERIOR;
+    // --- CENÁRIO INICIAL ---
+    // 1. Definir o esporte e a categoria do torneio
+    esporte = esporteRepository.save(new Esporte("Futsal", 5, 10));
+    categoria = CategoriaCurso.SUPERIOR;
 
-        // 2. Criar 7 equipes para este esporte e categoria
-        for (int i = 1; i <= 7; i++) {
-            Curso curso = cursoRepository.save(new Curso("Curso " + i, categoria));
-            Tecnico tecnico = new Tecnico();
-            tecnico.setMatricula("tec" + i);
-            tecnico.setNome("Técnico " + i);
-            tecnico.setSenha("123");
-            tecnico.setTipo(TipoUsuario.TECNICO);
-            usuarioRepository.save(tecnico);
+    // 2. Criar 7 equipes para este esporte e categoria
+    for (int i = 1; i <= 7; i++) {
+        Curso curso = cursoRepository.save(new Curso("Curso " + i, categoria));
+        Tecnico tecnico = new Tecnico();
+        tecnico.setMatricula("tec" + i);
+        tecnico.setNome("Técnico " + i);
+        tecnico.setSenha("123");
+        tecnico.setTipo(TipoUsuario.TECNICO);
+        usuarioRepository.save(tecnico);
 
-            criarEquipe("Equipe " + i, curso, esporte, tecnico, i);
-        }
+        criarEquipe("Equipe " + i, curso, esporte, tecnico, i);
     }
+}
 
     @Test
     void deveGerarFaseDeGruposCorretamente() throws Exception {
@@ -95,36 +95,75 @@ public class TorneioServiceTest {
     }
 
     private void criarEquipe(String nome, Curso curso, Esporte esporte, Tecnico tecnico, int idOffset) {
-        Equipe equipe = new Equipe();
-        equipe.setNome(nome);
-        equipe.setCurso(curso);
-        equipe.setEsporte(esporte);
-        equipe.setTecnico(tecnico);
+    // 1. CRIE A INSTÂNCIA DA EQUIPE
+    Equipe equipe = new Equipe();
+    equipe.setNome(nome);
+    equipe.setCurso(curso);
+    equipe.setEsporte(esporte);
+    equipe.setTecnico(tecnico);
 
-        // 1. PRIMEIRO, SALVE A EQUIPE PARA TORNÁ-LA PERSISTENTE
-        // Agora o objeto 'equipe' tem um ID e não é mais transiente.
-        equipeRepository.save(equipe);
+    // 2. CRIE E CONFIGURE OS ATLETAS
+    List<Atleta> atletas = new ArrayList<>();
+    for (int i = 1; i <= 5; i++) {
+        Atleta atleta = new Atleta();
+        atleta.setMatricula("atl" + idOffset + i);
+        atleta.setNome("Atleta " + nome + " " + i);
+        atleta.setSenha("123");
+        atleta.setTipo(TipoUsuario.ATLETA);
+        atleta.setTelefone("999" + idOffset + i);
 
-        // 2. AGORA, CRIE E CONFIGURE OS ATLETAS
-        List<Atleta> atletas = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Atleta atleta = new Atleta();
-            atleta.setMatricula("atl" + idOffset + i);
-            atleta.setNome("Atleta " + nome + " " + i);
-            atleta.setSenha("123");
-            atleta.setTipo(TipoUsuario.ATLETA);
-            atleta.setTelefone("999" + idOffset + i);
-            
-            // Associe o atleta à equipe JÁ PERSISTIDA
-            atleta.setEquipe(equipe); 
-            atletas.add(atleta);
-        }
-
-        // 3. SALVE OS ATLETAS, QUE AGORA TÊM UMA REFERÊNCIA VÁLIDA
-        usuarioRepository.saveAll(atletas);
-
-        // 4. ATUALIZE A LISTA DE ATLETAS NA EQUIPE
-        equipe.setAtletas(atletas);
-        equipeRepository.save(equipe); // Salva a associação final
+        // Associe o atleta à equipe
+        atleta.setEquipe(equipe); 
+        atletas.add(atleta);
     }
+
+    // 3. DEFINA A LISTA DE ATLETAS NA EQUIPE
+    equipe.setAtletas(atletas);
+
+    // 4. SALVE A EQUIPE APENAS UMA VEZ.
+    // O CascadeType.ALL garantirá que os atletas sejam salvos juntos.
+    equipeRepository.save(equipe);
+}
+    @Test
+void deveDistribuir11EquipesEmUmGrupoDe5DoisDe3() throws Exception {
+    // --- CENÁRIO ---
+    // O @BeforeEach já cria 7 equipes. Vamos criar mais 4 para totalizar 11.
+    for (int i = 8; i <= 11; i++) {
+        Curso curso = cursoRepository.save(new Curso("Curso Extra " + i, categoria));
+        Tecnico tecnico = new Tecnico();
+        tecnico.setMatricula("tec" + i);
+        tecnico.setNome("Técnico " + i);
+        tecnico.setSenha("123");
+        tecnico.setTipo(TipoUsuario.TECNICO);
+        usuarioRepository.save(tecnico);
+        criarEquipe("Equipe " + i, curso, esporte, tecnico, i);
+    }
+    
+    // Garantir que temos 11 equipes no total
+    assertThat(equipeRepository.count()).isEqualTo(11);
+
+    // --- AÇÃO ---
+    Torneio torneioIniciado = torneioService.iniciarFaseDeGrupos(esporte, categoria);
+
+    // --- VERIFICAÇÃO ---
+    assertThat(torneioIniciado).isNotNull();
+    
+    // 1. Deve haver 3 grupos no total
+    assertThat(torneioIniciado.getGrupos()).hasSize(3);
+
+    // 2. A distribuição de equipes nos grupos deve ser [5, 3, 3] (em qualquer ordem)
+    List<Long> tamanhosDosGrupos = torneioIniciado.getGrupos().stream()
+            .map(grupo -> (long) grupo.getEquipes().size())
+            .toList();
+            
+    assertThat(tamanhosDosGrupos).containsExactlyInAnyOrder(5L, 3L, 3L);
+    
+    // 3. O número total de partidas deve estar correto
+    // Grupo de 5 equipes -> 10 partidas (5*4/2)
+    // Grupo de 3 equipes -> 3 partidas (3*2/2)
+    // Grupo de 3 equipes -> 3 partidas (3*2/2)
+    // Total = 16 partidas
+    long totalPartidasGeradas = partidaRepository.count();
+    assertThat(totalPartidasGeradas).isEqualTo(16);
+}
 }
