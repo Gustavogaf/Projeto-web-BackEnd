@@ -60,4 +60,43 @@ public class ArbitroService {
 
         return partidaRepository.save(partida);
     }
+
+    public Partida registrarWO(String matriculaArbitro, Long partidaId, Long equipeVencedoraId) throws Exception {
+    // 1. VERIFICAR SE O SOLICITANTE É UM ÁRBITRO
+    usuarioRepository.findById(matriculaArbitro)
+            .filter(u -> u.getTipo() == TipoUsuario.ARBITRO)
+            .orElseThrow(() -> new Exception("Apenas usuários do tipo ARBITRO podem registrar um W.O."));
+
+    // 2. BUSCAR A PARTIDA E VERIFICAR SEU STATUS
+    Partida partida = partidaRepository.findById(partidaId)
+            .orElseThrow(() -> new Exception("Partida com o ID " + partidaId + " não encontrada."));
+
+    if (partida.getStatus() != StatusPartida.AGENDADA) {
+        throw new Exception("Esta partida não está mais agendada e não pode ser marcada como W.O.");
+    }
+
+    // 3. IDENTIFICAR EQUIPES E ATUALIZAR STATUS E PLACAR
+    Equipe equipeA = partida.getEquipeA();
+    Equipe equipeB = partida.getEquipeB();
+    
+    if (equipeVencedoraId.equals(equipeA.getId())) {
+        partida.setStatus(StatusPartida.WO_EQUIPE_B); // Equipe B desistiu
+        partida.setPlacarEquipeA(3); // Placar simbólico
+        partida.setPlacarEquipeB(0);
+        equipeA.setPontos(equipeA.getPontos() + 3); // 3 pontos para o vencedor
+        equipeRepository.save(equipeA);
+
+    } else if (equipeVencedoraId.equals(equipeB.getId())) {
+        partida.setStatus(StatusPartida.WO_EQUIPE_A); // Equipe A desistiu
+        partida.setPlacarEquipeA(0);
+        partida.setPlacarEquipeB(3); // Placar simbólico
+        equipeB.setPontos(equipeB.getPontos() + 3); // 3 pontos para o vencedor
+        equipeRepository.save(equipeB);
+
+    } else {
+        throw new Exception("A equipe vencedora informada não participa desta partida.");
+    }
+
+    return partidaRepository.save(partida);
+}
 }

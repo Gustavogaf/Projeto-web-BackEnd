@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.Controller.dto.PlacarRequest;
+import com.example.demo.Controller.dto.RegistroWORequest;
 
 
 @RestController
@@ -36,4 +37,22 @@ public class ArbitroController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PostMapping("/{matriculaArbitro}/partidas/{partidaId}/wo")
+public ResponseEntity<?> registrarWO(
+        @PathVariable String matriculaArbitro,
+        @PathVariable Long partidaId,
+        @RequestBody RegistroWORequest request) {
+
+    try {
+        Partida partidaAtualizada = arbitroService.registrarWO(
+                matriculaArbitro,
+                partidaId,
+                request.getEquipeVencedoraId()
+        );
+        return new ResponseEntity<>(partidaAtualizada, HttpStatus.OK);
+    } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+}
 }
