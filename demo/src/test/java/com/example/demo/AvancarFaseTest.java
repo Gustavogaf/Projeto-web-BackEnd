@@ -3,113 +3,98 @@ package com.example.demo;
 
 import com.example.demo.Model.*;
 import com.example.demo.Repository.*;
-import com.example.demo.Service.ArbitroService;
 import com.example.demo.Service.TorneioService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @Transactional
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class AvancarFaseTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    // Injetando services e repositórios necessários
     @Autowired private TorneioService torneioService;
-    @Autowired private ArbitroService arbitroService;
-    @Autowired private EsporteRepository esporteRepository;
-    @Autowired private CursoRepository cursoRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private EquipeRepository equipeRepository;
     @Autowired private PartidaRepository partidaRepository;
+    @Autowired private EquipeRepository equipeRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private CursoRepository cursoRepository;
+    @Autowired private EsporteRepository esporteRepository;
     @Autowired private TorneioRepository torneioRepository;
 
-    private Torneio torneio;
-    private Arbitro arbitro;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        // Limpeza completa
-        partidaRepository.deleteAll();
-        torneioRepository.deleteAll();
-        equipeRepository.deleteAll();
-        usuarioRepository.deleteAll();
-        cursoRepository.deleteAll();
-        esporteRepository.deleteAll();
-
-        // --- CENÁRIO: SEMIFINAL ---
-        // 1. Criar 4 equipes para ir direto para a semifinal
-        Esporte esporte = esporteRepository.save(new Esporte("Tênis de Mesa", 1, 2));
-        CategoriaCurso categoria = CategoriaCurso.SUBSEQUENTE;
-        for (int i = 1; i <= 4; i++) {
-            criarEquipeCompleta("Equipe Semifinal " + i, esporte, categoria, i);
-        }
-
-        // 2. Iniciar o torneio para gerar os jogos da semifinal
-        torneio = torneioService.iniciarFaseDeGrupos(esporte, categoria);
-
-        // 3. Criar um árbitro
-        arbitro = new Arbitro();
-        arbitro.setMatricula("arbFinal");
-        arbitro.setTipo(TipoUsuario.ARBITRO);
-        arbitro.setNome("Juiz Final");
-        arbitro.setSenha("final123");
-        usuarioRepository.save(arbitro);
-    }
-
     @Test
-    void deveAvancarDaSemifinalParaFinal() throws Exception {
-        // --- PARTE 1: JOGAR A SEMIFINAL ---
-        List<Partida> semifinais = partidaRepository.findByTorneioIdOrderByDataHoraDesc(torneio.getId());
-        assertThat(semifinais).hasSize(2);
+    void deveGerarMataMataCom14Equipes_Dando2Byes_e_Criando6Partidas() throws Exception {
+        // --- 1. CENÁRIO ---
+        // Simular um torneio com 14 equipes classificadas (7 primeiros e 7 segundos)
+        
+        Esporte esporte = esporteRepository.save(new Esporte("Handebol", 7, 14));
+        CategoriaCurso categoria = CategoriaCurso.INTEGRADO;
+        
+        Torneio torneio = new Torneio();
+        torneio.setEsporte(esporte);
+        torneio.setCategoria(categoria);
+        
+        // Criar 7 grupos, cada um com um 1º e 2º colocado bem definidos pelos pontos
+        for (int i = 1; i <= 7; i++) {
+            Grupo grupo = new Grupo();
+            grupo.setNome("Grupo " + i);
+            grupo.setTorneio(torneio);
+            
+            // Adiciona o campeão do grupo (mais pontos)
+            grupo.getEquipes().add(criarEquipe("Time " + i + "-A (1º)", esporte, categoria, (i*10)+1, 6));
+            // Adiciona o vice-campeão do grupo (menos pontos)
+            grupo.getEquipes().add(criarEquipe("Time " + i + "-B (2º)", esporte, categoria, (i*10)+2, 3));
+            
+            torneio.getGrupos().add(grupo);
+        }
+        torneioRepository.save(torneio);
 
-        // Definir os vencedores da semifinal
-        Partida semi1 = semifinais.get(0);
-        Partida semi2 = semifinais.get(1);
-        arbitroService.registrarResultado(arbitro.getMatricula(), semi1.getId(), 10, 5); // Vencedor: Equipe A da semi 1
-        arbitroService.registrarResultado(arbitro.getMatricula(), semi2.getId(), 3, 10); // Vencedor: Equipe B da semi 2
+        // Verificar o setup
+        long totalEquipes = torneio.getGrupos().stream().mapToLong(g -> g.getEquipes().size()).sum();
+        assertThat(totalEquipes).isEqualTo(14);
 
-        // --- PARTE 2: ACIONAR O AVANÇO DE FASE ---
-        // Ação
-        ResultActions resultado = mockMvc.perform(post("/api/torneios/{torneioId}/avancar-fase", torneio.getId()));
+        // --- 2. AÇÃO ---
+        List<Partida> partidasMataMata = torneioService.gerarMataMata(torneio.getId());
+        
+        // --- 3. VERIFICAÇÃO ---
+        // Com 14 classificados, o objetivo é a fase de 8 (Quartas).
+        // (14 - 8) * 2 = 12 times jogam a preliminar.
+        // 14 - 12 = 2 times recebem bye.
+        // 12 times / 2 = 6 partidas.
+        assertThat(partidasMataMata).isNotNull();
+        assertThat(partidasMataMata).hasSize(6);
 
-        // Verificação
-        resultado.andExpect(status().isCreated()) // Esperamos 201 Created, pois a final foi criada
-                 .andExpect(jsonPath("$").isArray()) // A resposta deve ser um array de partidas
-                 .andExpect(jsonPath("$.length()").value(1)); // Deve haver apenas 1 partida na final
+        // Verificação extra: garantir que as equipes que receberam bye são as de maior pontuação.
+        // Coletar os IDs de todos os times que estão jogando.
+        List<Long> idsJogando = partidasMataMata.stream()
+                .flatMap(p -> List.of(p.getEquipeA().getId(), p.getEquipeB().getId()).stream())
+                .collect(Collectors.toList());
 
-        // --- PARTE 3: VERIFICAR O FIM DO TORNEIO ---
-        // Agora, jogamos a final
-        Partida finalDoTorneio = partidaRepository.findByTorneioIdOrderByDataHoraDesc(torneio.getId()).get(0);
-        arbitroService.registrarResultado(arbitro.getMatricula(), finalDoTorneio.getId(), 21, 19);
+        // Coletar todos os times que foram criados.
+        List<Equipe> todasAsEquipes = equipeRepository.findAll();
 
-        // Ação
-        ResultActions resultadoFinal = mockMvc.perform(post("/api/torneios/{torneioId}/avancar-fase", torneio.getId()));
+        // Identificar os times que NÃO estão jogando (os que receberam bye).
+        List<Equipe> equipesComBye = todasAsEquipes.stream()
+                .filter(e -> !idsJogando.contains(e.getId()))
+                .collect(Collectors.toList());
 
-        // Verificação
-        resultadoFinal.andExpect(status().isOk()) // Esperamos 200 OK
-                      .andExpect(jsonPath("$").value("Torneio finalizado! Campeão determinado.")); // E a mensagem de fim de torneio
+        // Os 2 times que receberam bye devem estar entre os 7 campeões de grupo.
+        assertThat(equipesComBye).hasSize(2);
+        for(Equipe equipe : equipesComBye) {
+            assertThat(equipe.getNome()).contains("(1º)");
+        }
     }
-
-    private void criarEquipeCompleta(String nomeEquipe, Esporte esporte, CategoriaCurso categoria, int idOffset) {
-        Curso curso = cursoRepository.save(new Curso("Curso " + nomeEquipe, categoria));
+    
+    private Equipe criarEquipe(String nomeEquipe, Esporte esporte, CategoriaCurso categoria, int idOffset, int pontos) {
+        Curso curso = cursoRepository.save(new Curso("Curso " + idOffset, categoria));
         Tecnico tecnico = new Tecnico();
-        tecnico.setMatricula("tecFinal" + idOffset);
+        tecnico.setMatricula("tec" + idOffset);
         tecnico.setTipo(TipoUsuario.TECNICO);
         tecnico.setNome("Téc " + nomeEquipe);
         tecnico.setSenha("123");
@@ -120,6 +105,7 @@ public class AvancarFaseTest {
         equipe.setCurso(curso);
         equipe.setEsporte(esporte);
         equipe.setTecnico(tecnico);
-        equipeRepository.save(equipe);
+        equipe.setPontos(pontos); // Definimos os pontos manualmente para o teste
+        return equipeRepository.save(equipe);
     }
 }
