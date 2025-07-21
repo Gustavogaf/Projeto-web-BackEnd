@@ -34,4 +34,34 @@ public class EsporteService {
     public List<Esporte> listarTodos() {
         return esporteRepository.findAll();
     }
+
+    public Esporte atualizarEsporte(Long id, Esporte esporteDetails) throws Exception {
+        Esporte esporte = esporteRepository.findById(id)
+                .orElseThrow(() -> new Exception("Esporte com o ID " + id + " não encontrado."));
+
+        if (esporteDetails.getNome() != null && !esporteDetails.getNome().isBlank()) {
+            esporte.setNome(esporteDetails.getNome());
+        }
+        if (esporteDetails.getMinAtletas() > 0) {
+            esporte.setMinAtletas(esporteDetails.getMinAtletas());
+        }
+        if (esporteDetails.getMaxAtletas() > 0) {
+            esporte.setMaxAtletas(esporteDetails.getMaxAtletas());
+        }
+
+        // Revalida a regra de min/max
+        if (esporte.getMinAtletas() > esporte.getMaxAtletas()) {
+            throw new Exception("A quantidade mínima de atletas não pode ser maior que a quantidade máxima.");
+        }
+
+        return esporteRepository.save(esporte);
+    }
+
+    public void deletarEsporte(Long id) throws Exception {
+        if (!esporteRepository.existsById(id)) {
+            throw new Exception("Esporte com o ID " + id + " não encontrado.");
+        }
+        // Adicionar verificação de dependência com equipes se necessário
+        esporteRepository.deleteById(id);
+    }
 }

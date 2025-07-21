@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,4 +46,25 @@ public class CursoController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarCurso(@PathVariable Long id, @RequestBody Curso cursoDetails) {
+        try {
+            Curso cursoAtualizado = cursoService.atualizarCurso(id, cursoDetails);
+            return ResponseEntity.ok(new CursoResponseDTO(cursoAtualizado));
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletarCurso(@PathVariable Long id) {
+        try {
+            cursoService.deletarCurso(id);
+            return ResponseEntity.ok("Curso deletado com sucesso.");
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
+

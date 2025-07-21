@@ -100,4 +100,55 @@ public class TecnicoService {
     public List<Usuario> listarTodos() {
         return usuarioRepository.findByTipo(TipoUsuario.TECNICO);
     }
+
+    public Atleta atualizarAtleta(String matriculaTecnico, String matriculaAtleta, Atleta detalhesAtleta) throws Exception {
+        // Valida se quem está requisitando é um técnico
+        usuarioRepository.findById(matriculaTecnico)
+            .filter(u -> u.getTipo() == TipoUsuario.TECNICO)
+            .orElseThrow(() -> new Exception("Apenas usuários do tipo TECNICO podem atualizar atletas."));
+
+        // Busca o atleta a ser atualizado
+        Atleta atleta = (Atleta) usuarioRepository.findById(matriculaAtleta)
+            .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
+            .orElseThrow(() -> new Exception("Atleta com a matrícula " + matriculaAtleta + " não encontrado."));
+        
+        if (detalhesAtleta.getApelido() != null) {
+            atleta.setApelido(detalhesAtleta.getApelido());
+        }
+        if (detalhesAtleta.getTelefone() != null && !detalhesAtleta.getTelefone().isBlank()) {
+            atleta.setTelefone(detalhesAtleta.getTelefone());
+        }
+        if (detalhesAtleta.getSenha() != null && !detalhesAtleta.getSenha().isBlank()) {
+            atleta.setSenha(detalhesAtleta.getSenha());
+        }
+
+        return usuarioRepository.save(atleta);
+    }
+
+    // NOVO MÉTODO: REMOVER ATLETA DA EQUIPE
+    public void removerAtletaDaEquipe(String matriculaTecnico, String matriculaAtleta) throws Exception {
+        // Valida se quem está requisitando é um técnico
+        Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)
+            .filter(u -> u.getTipo() == TipoUsuario.TECNICO)
+            .orElseThrow(() -> new Exception("Usuário com a matrícula " + matriculaTecnico + " não é um técnico."));
+
+        // Busca o atleta
+        Atleta atleta = (Atleta) usuarioRepository.findById(matriculaAtleta)
+            .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
+            .orElseThrow(() -> new Exception("Atleta com a matrícula " + matriculaAtleta + " não encontrado."));
+
+        // Valida se o atleta tem uma equipe
+        if (atleta.getEquipe() == null) {
+            throw new Exception("O atleta não pertence a nenhuma equipe.");
+        }
+
+        // Valida se o técnico que está requisitando é o técnico da equipe do atleta
+        if (!atleta.getEquipe().getTecnico().getMatricula().equals(tecnico.getMatricula())) {
+            throw new Exception("Você não tem permissão para remover atletas desta equipe.");
+        }
+
+        // Remove a associação do atleta com a equipe
+        atleta.setEquipe(null);
+        usuarioRepository.save(atleta);
+    }
 }

@@ -3,12 +3,14 @@ package com.example.demo.Controller;
 
 import com.example.demo.Model.Atleta;
 import com.example.demo.Model.Equipe;
+import com.example.demo.Model.Tecnico;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Service.TecnicoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,6 +61,34 @@ public class TecnicoController {
             Atleta atletaSalvo = tecnicoService.cadastrarAtleta(matriculaTecnico, novoAtleta);
             // Retorna o DTO do atleta criado (reutilizando o AtletaResponseDTO)
             return new ResponseEntity<>(new AtletaResponseDTO(atletaSalvo), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{matriculaTecnico}/atletas/{matriculaAtleta}")
+    public ResponseEntity<?> atualizarAtleta(
+            @PathVariable String matriculaTecnico,
+            @PathVariable String matriculaAtleta,
+            @RequestBody Atleta detalhesAtleta) {
+        
+        try {
+            Atleta atletaAtualizado = tecnicoService.atualizarAtleta(matriculaTecnico, matriculaAtleta, detalhesAtleta);
+            return ResponseEntity.ok(new AtletaResponseDTO(atletaAtualizado));
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // NOVO ENDPOINT: REMOVER ATLETA DA EQUIPE
+    @DeleteMapping("/{matriculaTecnico}/atletas/{matriculaAtleta}")
+    public ResponseEntity<?> removerAtletaDaEquipe(
+            @PathVariable String matriculaTecnico,
+            @PathVariable String matriculaAtleta) {
+            
+        try {
+            tecnicoService.removerAtletaDaEquipe(matriculaTecnico, matriculaAtleta);
+            return ResponseEntity.ok("Atleta " + matriculaAtleta + " removido da sua equipe com sucesso.");
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -44,4 +44,24 @@ public class EsporteController {
         // 3. Retorna a lista de DTOs com o status 200 OK
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarEsporte(@PathVariable Long id, @RequestBody Esporte esporteDetails) {
+        try {
+            Esporte esporteAtualizado = esporteService.atualizarEsporte(id, esporteDetails);
+            return ResponseEntity.ok(esporteAtualizado);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deletarEsporte(@PathVariable Long id) {
+        try {
+            esporteService.deletarEsporte(id);
+            return ResponseEntity.ok("Esporte deletado com sucesso.");
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 }

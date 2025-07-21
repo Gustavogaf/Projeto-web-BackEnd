@@ -1,6 +1,7 @@
 // src/main/java/com/example/demo/Service/AdminService.java
 package com.example.demo.Service;
 
+import com.example.demo.Model.Arbitro;
 import com.example.demo.Model.Coordenador;
 import com.example.demo.Model.TipoUsuario;
 import com.example.demo.Model.Usuario;
@@ -30,5 +31,77 @@ public class AdminService {
 
     public List<Usuario> listarCoordenadores() {
         return usuarioRepository.findByTipo(TipoUsuario.COORDENADOR);
+    }
+
+    public Coordenador atualizarCoordenador(String matricula, Coordenador detalhesCoordenador) throws Exception {
+        Usuario usuario = usuarioRepository.findById(matricula)
+                .orElseThrow(() -> new Exception("Usuário com a matrícula " + matricula + " não encontrado."));
+
+        if (usuario.getTipo() != TipoUsuario.COORDENADOR) {
+            throw new Exception("O usuário não é um coordenador.");
+        }
+
+        Coordenador coordenador = (Coordenador) usuario;
+
+        // Atualiza o nome se for fornecido
+        if (detalhesCoordenador.getNome() != null && !detalhesCoordenador.getNome().isBlank()) {
+            coordenador.setNome(detalhesCoordenador.getNome());
+        }
+
+        // Atualiza a senha se for fornecida
+        if (detalhesCoordenador.getSenha() != null && !detalhesCoordenador.getSenha().isBlank()) {
+            coordenador.setSenha(detalhesCoordenador.getSenha());
+        }
+
+        return usuarioRepository.save(coordenador);
+    }
+
+    // NOVO MÉTODO: DELETAR COORDENADOR
+    public void deletarCoordenador(String matricula) throws Exception {
+        Usuario usuario = usuarioRepository.findById(matricula)
+                .orElseThrow(() -> new Exception("Coordenador com a matrícula " + matricula + " não encontrado."));
+
+        if (usuario.getTipo() != TipoUsuario.COORDENADOR) {
+            throw new Exception("O usuário especificado não é um coordenador e não pode ser deletado por esta função.");
+        }
+        
+        // Regra de negócio: Adicionar futuramente a verificação se o coordenador possui dependências (ex: técnicos)
+        // Por enquanto, a deleção é direta.
+
+        usuarioRepository.deleteById(matricula);
+    }
+
+    public Arbitro cadastrarArbitro(Arbitro novoArbitro) throws Exception {
+        if (usuarioRepository.existsById(novoArbitro.getMatricula())) {
+            throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoArbitro.getMatricula());
+        }
+        novoArbitro.setTipo(TipoUsuario.ARBITRO);
+        return usuarioRepository.save(novoArbitro);
+    }
+    
+    public Arbitro atualizarArbitro(String matricula, Arbitro detalhesArbitro) throws Exception {
+        Arbitro arbitro = (Arbitro) usuarioRepository.findById(matricula)
+                .filter(u -> u.getTipo() == TipoUsuario.ARBITRO)
+                .orElseThrow(() -> new Exception("Árbitro com a matrícula " + matricula + " não encontrado."));
+
+        if (detalhesArbitro.getNome() != null && !detalhesArbitro.getNome().isBlank()) {
+            arbitro.setNome(detalhesArbitro.getNome());
+        }
+        if (detalhesArbitro.getSenha() != null && !detalhesArbitro.getSenha().isBlank()) {
+            arbitro.setSenha(detalhesArbitro.getSenha());
+        }
+        return usuarioRepository.save(arbitro);
+    }
+
+    public void deletarArbitro(String matricula) throws Exception {
+        if (!usuarioRepository.existsById(matricula)) {
+            throw new Exception("Árbitro com a matrícula " + matricula + " não encontrado.");
+        }
+        
+        // Regra de negócio: A verificação se um árbitro apitou uma partida
+        // exigiria uma associação direta na entidade Partida.
+        // Como não existe, a deleção é permitida.
+        
+        usuarioRepository.deleteById(matricula);
     }
 }

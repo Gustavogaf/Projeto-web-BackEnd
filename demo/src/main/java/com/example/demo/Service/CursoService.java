@@ -27,4 +27,34 @@ public class CursoService {
         }
         return cursoRepository.save(curso);
     }
+
+    public Curso atualizarCurso(Long id, Curso cursoDetails) throws Exception {
+        Curso curso = cursoRepository.findById(id)
+                .orElseThrow(() -> new Exception("Curso com o ID " + id + " não encontrado."));
+
+        // Valida se o novo nome já não está em uso por OUTRO curso
+        if (cursoDetails.getNome() != null && !cursoDetails.getNome().isBlank() && !curso.getNome().equalsIgnoreCase(cursoDetails.getNome())) {
+            if (cursoRepository.existsByNome(cursoDetails.getNome())) {
+                throw new Exception("Já existe um curso cadastrado com o nome: " + cursoDetails.getNome());
+            }
+            curso.setNome(cursoDetails.getNome());
+        }
+
+        if (cursoDetails.getCategoria() != null) {
+            curso.setCategoria(cursoDetails.getCategoria());
+        }
+
+        return cursoRepository.save(curso);
+    }
+
+    public void deletarCurso(Long id) throws Exception {
+        if (!cursoRepository.existsById(id)) {
+            throw new Exception("Curso com o ID " + id + " não encontrado.");
+        }
+        // Adicionar aqui uma verificação se o curso está sendo usado por alguma equipe antes de deletar
+        // if (equipeRepository.existsByCursoId(id)) {
+        //     throw new Exception("Não é possível deletar o curso, pois ele já está associado a uma ou mais equipes.");
+        // }
+        cursoRepository.deleteById(id);
+    }
 }
