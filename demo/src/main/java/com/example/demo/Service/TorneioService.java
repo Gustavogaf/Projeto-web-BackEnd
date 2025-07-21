@@ -102,24 +102,63 @@ public class TorneioService {
     }
 
     private void distribuirEquipesNosGrupos(Torneio torneio, List<Equipe> equipes) {
-        Collections.shuffle(equipes); // Sorteia a ordem das equipes
-        int totalEquipes = equipes.size();
-        
-        // Lógica simplificada para distribuição de grupos.
-        // A lógica da tabela do Requisito 14 pode ser complexa e implementada aqui.
-        // Por simplicidade inicial, vamos criar grupos de 3 ou 4.
-        int numGrupos = (int) Math.ceil(totalEquipes / 4.0);
-        for (int i = 0; i < numGrupos; i++) {
-            Grupo grupo = new Grupo();
-            grupo.setNome("Grupo " + (char)('A' + i));
-            grupo.setTorneio(torneio);
-            torneio.getGrupos().add(grupo);
-        }
+    Collections.shuffle(equipes); // Sorteia a ordem para aleatoriedade
+    int totalEquipes = equipes.size();
 
-        for (int i = 0; i < totalEquipes; i++) {
-            torneio.getGrupos().get(i % numGrupos).getEquipes().add(equipes.get(i));
+    // Validação de regra de negócio: mínimo de 3 equipes para um torneio
+    if (totalEquipes < 3) {
+        // Lançar a exceção aqui é uma boa prática, pois o serviço que inicia o torneio já trata isso.
+        // Apenas como uma segurança adicional.
+        return; 
+    }
+
+    List<Integer> distribuicao = new ArrayList<>();
+    
+    if (totalEquipes % 3 == 0) {
+        int numGruposDe3 = totalEquipes / 3;
+        for (int i = 0; i < numGruposDe3; i++) {
+            distribuicao.add(3);
+        }
+    } else if (totalEquipes % 3 == 1) {
+        // Ex: 7 equipes -> 1 grupo de 4 e 1 grupo de 3
+        // Ex: 10 equipes -> 1 grupo de 4 e 2 grupos de 3
+        distribuicao.add(4);
+        int equipesRestantes = totalEquipes - 4;
+        int numGruposDe3 = equipesRestantes / 3;
+        for (int i = 0; i < numGruposDe3; i++) {
+            distribuicao.add(3);
+        }
+    } else { // totalEquipes % 3 == 2
+        // Ex: 5 equipes -> 1 grupo de 5
+        // Ex: 8 equipes -> 1 grupo de 5 e 1 grupo de 3
+        distribuicao.add(5);
+        int equipesRestantes = totalEquipes - 5;
+        int numGruposDe3 = equipesRestantes / 3;
+        for (int i = 0; i < numGruposDe3; i++) {
+            distribuicao.add(3);
         }
     }
+
+    // Criar os grupos vazios baseados na distribuição calculada
+    for (int i = 0; i < distribuicao.size(); i++) {
+        Grupo grupo = new Grupo();
+        grupo.setNome("Grupo " + (char)('A' + i));
+        grupo.setTorneio(torneio);
+        torneio.getGrupos().add(grupo);
+    }
+
+    // Adicionar as equipes aos grupos
+    int equipeIndex = 0;
+    for (int i = 0; i < distribuicao.size(); i++) {
+        Grupo grupoAtual = torneio.getGrupos().get(i);
+        int equipesNoGrupo = distribuicao.get(i);
+        for (int j = 0; j < equipesNoGrupo; j++) {
+            if (equipeIndex < totalEquipes) {
+                grupoAtual.getEquipes().add(equipes.get(equipeIndex++));
+            }
+        }
+    }
+}
 
     private void gerarPartidasDosGrupos(Torneio torneio) {
         LocalDateTime dataPartidaFicticia = LocalDateTime.now();
