@@ -16,8 +16,9 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -69,5 +70,67 @@ public class CoordenadorControllerTest {
                 .andExpect(jsonPath("$.matricula").value("tec001"))
                 .andExpect(jsonPath("$.nome").value("Professor Pardal"))
                 .andExpect(jsonPath("$.tipo").value("TECNICO"));
+    }
+    @Test
+    public void deveAtualizarUmTecnicoComSucesso() throws Exception {
+        // Cenário
+        String matriculaCoordenador = "coord01";
+        String matriculaTecnico = "tec01";
+        
+        Tecnico detalhesTecnico = new Tecnico();
+        detalhesTecnico.setNome("Novo Nome Tecnico");
+
+        Tecnico tecnicoAtualizado = new Tecnico();
+        tecnicoAtualizado.setMatricula(matriculaTecnico);
+        tecnicoAtualizado.setNome("Novo Nome Tecnico");
+        tecnicoAtualizado.setTipo(TipoUsuario.TECNICO);
+
+        when(coordenadorService.atualizarTecnico(eq(matriculaCoordenador), eq(matriculaTecnico), any(Tecnico.class)))
+                .thenReturn(tecnicoAtualizado);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(put("/api/coordenadores/{mc}/tecnicos/{mt}", matriculaCoordenador, matriculaTecnico)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(detalhesTecnico)));
+
+        // Verificação
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.matricula").value(matriculaTecnico))
+                .andExpect(jsonPath("$.nome").value("Novo Nome Tecnico"));
+    }
+
+    @Test
+    public void deveDeletarUmTecnicoComSucesso() throws Exception {
+        // Cenário
+        String matriculaCoordenador = "coord01";
+        String matriculaTecnico = "tec02";
+        doNothing().when(coordenadorService).deletarTecnico(matriculaCoordenador, matriculaTecnico);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(delete("/api/coordenadores/{mc}/tecnicos/{mt}", matriculaCoordenador, matriculaTecnico));
+
+        // Verificação
+        resultado.andExpect(status().isOk())
+                 .andExpect(content().string("Técnico com matrícula " + matriculaTecnico + " deletado com sucesso."));
+        
+        verify(coordenadorService, times(1)).deletarTecnico(matriculaCoordenador, matriculaTecnico);
+    }
+    
+    @Test
+    public void naoDeveDeletarTecnicoAssociadoAEquipe() throws Exception {
+        // Cenário
+        String matriculaCoordenador = "coord01";
+        String matriculaTecnico = "tec03";
+        
+        // "Ensinamos" o mock a lançar a exceção da nossa regra de negócio
+        doThrow(new Exception("Não é possível deletar o técnico, pois ele já está associado a uma equipe."))
+            .when(coordenadorService).deletarTecnico(matriculaCoordenador, matriculaTecnico);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(delete("/api/coordenadores/{mc}/tecnicos/{mt}", matriculaCoordenador, matriculaTecnico));
+
+        // Verificação
+        resultado.andExpect(status().isBadRequest())
+                 .andExpect(content().string("Não é possível deletar o técnico, pois ele já está associado a uma equipe."));
     }
 }

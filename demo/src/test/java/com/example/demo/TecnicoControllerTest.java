@@ -1,6 +1,7 @@
 // src/test/java/com/example/demo/TecnicoControllerTest.java
 package com.example.demo;
 
+import com.example.demo.Controller.dto.AtletaResponseDTO;
 import com.example.demo.Controller.dto.CadastroEquipeRequest; // Importe o DTO
 import com.example.demo.Model.*;
 import com.example.demo.Service.TecnicoService;
@@ -18,8 +19,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -76,5 +78,71 @@ public class TecnicoControllerTest {
         resultado.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10L))
                 .andExpect(jsonPath("$.nome").value("Os Invencíveis"));
+    }
+
+    @Test
+    public void deveAtualizarUmAtletaComSucesso() throws Exception {
+        // Cenário
+        String matriculaTecnico = "tec007";
+        String matriculaAtleta = "atl01";
+        
+        Atleta detalhesAtleta = new Atleta();
+        detalhesAtleta.setApelido("Craque");
+        detalhesAtleta.setTelefone("79988887777");
+
+        Atleta atletaAtualizado = new Atleta();
+        atletaAtualizado.setMatricula(matriculaAtleta);
+        atletaAtualizado.setNome("Nome do Atleta");
+        atletaAtualizado.setApelido("Craque");
+        atletaAtualizado.setTelefone("79988887777");
+        atletaAtualizado.setTipo(TipoUsuario.ATLETA);
+
+        when(tecnicoService.atualizarAtleta(eq(matriculaTecnico), eq(matriculaAtleta), any(Atleta.class)))
+                .thenReturn(atletaAtualizado);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(put("/api/tecnicos/{mt}/atletas/{ma}", matriculaTecnico, matriculaAtleta)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(detalhesAtleta)));
+
+        // Verificação
+        resultado.andExpect(status().isOk())
+                .andExpect(jsonPath("$.apelido").value("Craque"))
+                .andExpect(jsonPath("$.telefone").value("79988887777"));
+    }
+
+    @Test
+    public void deveRemoverUmAtletaDaEquipeComSucesso() throws Exception {
+        // Cenário
+        String matriculaTecnico = "tec007";
+        String matriculaAtleta = "atl02";
+        doNothing().when(tecnicoService).removerAtletaDaEquipe(matriculaTecnico, matriculaAtleta);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(delete("/api/tecnicos/{mt}/atletas/{ma}", matriculaTecnico, matriculaAtleta));
+
+        // Verificação
+        resultado.andExpect(status().isOk())
+                 .andExpect(content().string("Atleta " + matriculaAtleta + " removido da sua equipe com sucesso."));
+        
+        verify(tecnicoService, times(1)).removerAtletaDaEquipe(matriculaTecnico, matriculaAtleta);
+    }
+
+    @Test
+    public void naoDeveRemoverAtletaSeTecnicoNaoForDaEquipe() throws Exception {
+        // Cenário
+        String matriculaTecnico = "tec008"; // Outro técnico
+        String matriculaAtleta = "atl01";
+        
+        // "Ensinamos" o mock a lançar a exceção de permissão
+        doThrow(new Exception("Você não tem permissão para remover atletas desta equipe."))
+            .when(tecnicoService).removerAtletaDaEquipe(matriculaTecnico, matriculaAtleta);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(delete("/api/tecnicos/{mt}/atletas/{ma}", matriculaTecnico, matriculaAtleta));
+
+        // Verificação
+        resultado.andExpect(status().isBadRequest())
+                 .andExpect(content().string("Você não tem permissão para remover atletas desta equipe."));
     }
 }

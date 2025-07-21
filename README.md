@@ -31,7 +31,7 @@ Este projeto foi desenvolvido como requisito para a disciplina de Web 1 do curso
 
 1.  No seu SQL Server, crie um banco de dados com o nome `Server_WEB`.
 2.  Habilite o modo de autenticação misto (SQL Server e Windows).
-3.  Crie um novo login (ex: `dev_web`) e dê a ele permissões sobre o banco `Server_WEB`.
+3.  Crie um novo login (ex: `sa`) e dê a ele permissões sobre o banco `Server_WEB`.
 4.  Abra o arquivo `src/main/resources/application.properties` e configure as credenciais do seu banco de dados:
 
     ```properties
@@ -59,6 +59,8 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 ### 4.1. Administrador
 
+Endpoints para gestão de Coordenadores e Árbitros.
+
 #### `POST /api/admin/coordenadores`
 
 * **Descrição**: Cadastra um novo coordenador de curso no sistema.
@@ -76,6 +78,36 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 * **Descrição**: Lista todos os coordenadores cadastrados.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
+
+#### `PUT /api/admin/coordenadores/{matricula}`
+
+* **Descrição**: Atualiza os dados de um coordenador existente.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "nome": "Nome Atualizado do Coordenador",
+      "senha": "novaSenhaSegura"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do coordenador atualizado.
+
+#### `DELETE /api/admin/coordenadores/{matricula}`
+
+* **Descrição**: Deleta um coordenador do sistema.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
+#### `POST /api/admin/arbitros`
+
+* **Descrição**: Cadastra um novo árbitro no sistema.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "matricula": "arb001",
+      "nome": "Árbitro Oficial",
+      "senha": "senhaArbitro"
+    }
+    ```
+* **Resposta de Sucesso (201 CREATED)**: O objeto do árbitro cadastrado.
 
 ---
 
@@ -97,6 +129,23 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 
 * **Descrição**: Lista todos os cursos cadastrados.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `CursoResponseDTO`.
+
+#### `PUT /api/cursos/{id}`
+
+* **Descrição**: Atualiza os dados de um curso existente.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "nome": "Ciência da Computação",
+      "categoria": "SUPERIOR"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**: O objeto do curso atualizado.
+
+#### `DELETE /api/cursos/{id}`
+
+* **Descrição**: Deleta um curso, desde que não esteja associado a nenhuma equipe.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
@@ -142,6 +191,16 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Descrição**: Lista todos os técnicos cadastrados.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
 
+#### `PUT /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
+
+* **Descrição**: Permite que um coordenador atualize os dados de um técnico.
+* **Resposta de Sucesso (200 OK)**: O objeto do técnico atualizado.
+
+#### `DELETE /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
+
+* **Descrição**: Permite que um coordenador delete um técnico, desde que ele não esteja associado a uma equipe.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
 ---
 
 ### 4.5. Equipes e Atletas
@@ -160,6 +219,16 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     }
     ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto do atleta cadastrado.
+
+#### `PUT /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
+
+* **Descrição**: Permite que um técnico atualize os dados de um atleta.
+* **Resposta de Sucesso (200 OK)**: O objeto do atleta atualizado.
+
+#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
+
+* **Descrição**: Permite que um técnico remova (desassocie) um atleta de sua equipe, sem deletar o registro do atleta do sistema.
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
 
