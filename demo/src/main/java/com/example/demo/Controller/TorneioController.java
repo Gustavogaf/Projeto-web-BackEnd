@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Controller/TorneioController.java
 package com.example.demo.Controller;
 
 import com.example.demo.Model.CategoriaCurso;
@@ -33,9 +32,7 @@ public class TorneioController {
     @PostMapping("/iniciar")
     public ResponseEntity<?> iniciarFaseDeGrupos(@RequestBody IniciarTorneioRequest request) {
         try {
-            // No mundo real, precisaríamos buscar o objeto Esporte pelo ID.
-            // Por simplicidade aqui, vamos assumir que o service pode lidar com isso.
-            // O ideal seria o service receber o ID e buscar no repositório.
+            
             Esporte esporte = new Esporte();
             esporte.setId(request.getEsporteId());
 

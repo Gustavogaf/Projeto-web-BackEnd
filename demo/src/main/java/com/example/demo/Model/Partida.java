@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/Partida.java
 package com.example.demo.Model;
 
 import jakarta.persistence.*;
@@ -36,7 +35,6 @@ public class Partida {
         this.status = StatusPartida.AGENDADA; // Uma nova partida sempre começa como agendada
     }
     
-    // ... Getters e Setters para todos os campos
     public Long getId() {
         return id;
     }

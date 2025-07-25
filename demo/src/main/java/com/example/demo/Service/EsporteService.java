@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/EsporteService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.Esporte;
@@ -16,11 +15,11 @@ public class EsporteService {
     private EsporteRepository esporteRepository;
 
     public Esporte criarEsporte(Esporte esporte) throws Exception {
-        // Regra de Negócio: Requisito 4 - Não permitir dois esportes iguais de serem cadastrados.
+        // Regra de Negócio: Não permitir dois esportes iguais de serem cadastrados.
         if (esporteRepository.existsByNome(esporte.getNome())) {
             throw new Exception("Já existe um esporte cadastrado com o nome: " + esporte.getNome());
         }
-        // Regra de Negócio: Requisito 6 - Quantidade mínima e máxima de atletas.
+        // Regra de Negócio: Quantidade mínima e máxima de atletas.
         if (esporte.getMinAtletas() <= 0 || esporte.getMaxAtletas() <= 0) {
              throw new Exception("A quantidade mínima e máxima de atletas deve ser maior que zero.");
         }

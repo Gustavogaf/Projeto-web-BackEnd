@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/Grupo.java
 package com.example.demo.Model;
 
 import jakarta.persistence.*;
@@ -6,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "grupo") // "group" é uma palavra reservada no SQL, então usamos "grupo"
+@Table(name = "grupo") 
 public class Grupo {
 
     @Id

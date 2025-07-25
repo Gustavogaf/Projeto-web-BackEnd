@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Repository/TorneioRepository.java
 package com.example.demo.Repository;
 
 import com.example.demo.Model.Torneio;

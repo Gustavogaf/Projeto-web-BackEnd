@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/CoordenadorService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.Tecnico;
@@ -63,7 +62,7 @@ public class CoordenadorService {
         return usuarioRepository.save(tecnico);
     }
 
-    // NOVO MÉTODO: DELETAR TÉCNICO
+    // DELETAR TÉCNICO
     public void deletarTecnico(String matriculaCoordenador, String matriculaTecnico) throws Exception {
         // Valida o coordenador
         usuarioRepository.findById(matriculaCoordenador)

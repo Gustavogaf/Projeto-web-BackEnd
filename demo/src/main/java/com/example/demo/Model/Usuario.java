@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/Usuario.java
 package com.example.demo.Model;
 
 import jakarta.persistence.*;
@@ -9,7 +8,7 @@ public class Usuario {
 
     @Id
     @Column(unique = true, nullable = false)
-    private String matricula; // Requisitos 11 e 12: Matrícula é a chave primária
+    private String matricula; 
 
     @Column(nullable = false)
     private String nome;

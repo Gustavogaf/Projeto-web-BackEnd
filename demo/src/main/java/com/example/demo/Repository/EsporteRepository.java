@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EsporteRepository extends JpaRepository<Esporte, Long> {
     
-    // Método para verificar se já existe um esporte com o mesmo nome (Requisito 4)
+    
     boolean existsByNome(String nome);
 }

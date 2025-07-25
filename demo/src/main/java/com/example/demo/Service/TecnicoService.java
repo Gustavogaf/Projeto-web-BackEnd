@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/TecnicoService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.*;
@@ -26,7 +25,7 @@ public class TecnicoService {
     @Autowired
     private EsporteRepository esporteRepository;
 
-    // --- MÉTODO CORRIGIDO E REESCRITO ---
+    
     @Transactional // Garante que todas as operações de banco de dados aconteçam em uma única transação
     public Equipe cadastrarEquipe(String matriculaTecnico, Equipe equipeInfoRequest, List<String> matriculasAtletas) throws Exception {
 
@@ -84,7 +83,6 @@ public class TecnicoService {
         return equipeRepository.findById(equipeSalva.getId()).get();
     }
     
-    // ... (demais métodos do serviço, como cadastrarAtleta e listarTodos)
     
     public Atleta cadastrarAtleta(String matriculaTecnico, Atleta novoAtleta) throws Exception {
         if (!usuarioRepository.existsById(matriculaTecnico) || usuarioRepository.findById(matriculaTecnico).get().getTipo() != TipoUsuario.TECNICO) {
@@ -125,7 +123,7 @@ public class TecnicoService {
         return usuarioRepository.save(atleta);
     }
 
-    // NOVO MÉTODO: REMOVER ATLETA DA EQUIPE
+    // REMOVER ATLETA DA EQUIPE
     public void removerAtletaDaEquipe(String matriculaTecnico, String matriculaAtleta) throws Exception {
         // Valida se quem está requisitando é um técnico
         Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)

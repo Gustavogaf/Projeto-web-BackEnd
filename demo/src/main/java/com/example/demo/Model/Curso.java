@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/modelo/Curso.java
 package com.example.demo.Model;
 
 import jakarta.persistence.Entity;
@@ -32,7 +31,7 @@ public class Curso {
         this.categoria = categoria;
     }
 
-    // Getters e Setters (em português, conforme combinado)
+    // Getters e Setters 
     public Long getId() {
         return id;
     }

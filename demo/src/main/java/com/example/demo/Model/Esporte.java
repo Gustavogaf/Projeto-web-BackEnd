@@ -14,13 +14,13 @@ public class Esporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true) // Requisito 4: Não permitir dois esportes iguais
+    @Column(nullable = false, unique = true) 
     private String nome;
 
-    @Column(nullable = false) // Requisito 6: Quantidade mínima de atletas
+    @Column(nullable = false) 
     private int minAtletas;
 
-    @Column(nullable = false) // Requisito 6: Quantidade máxima de atletas
+    @Column(nullable = false) 
     private int maxAtletas;
 
     // Construtor padrão

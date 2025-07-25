@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/AdminService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.Arbitro;
@@ -56,7 +55,7 @@ public class AdminService {
         return usuarioRepository.save(coordenador);
     }
 
-    // NOVO MÉTODO: DELETAR COORDENADOR
+    // DELETAR COORDENADOR
     public void deletarCoordenador(String matricula) throws Exception {
         Usuario usuario = usuarioRepository.findById(matricula)
                 .orElseThrow(() -> new Exception("Coordenador com a matrícula " + matricula + " não encontrado."));

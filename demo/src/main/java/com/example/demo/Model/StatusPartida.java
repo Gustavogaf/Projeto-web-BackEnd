@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/StatusPartida.java
 package com.example.demo.Model;
 
 public enum StatusPartida {

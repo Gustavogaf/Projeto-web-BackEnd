@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Controller/AtletaController.java
 package com.example.demo.Controller;
 
 import com.example.demo.Controller.dto.AtletaResponseDTO;

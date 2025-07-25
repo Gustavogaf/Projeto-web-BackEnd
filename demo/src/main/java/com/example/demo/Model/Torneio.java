@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/Torneio.java
 package com.example.demo.Model;
 
 import jakarta.persistence.*;

@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Controller/EsporteController.java
 package com.example.demo.Controller;
 
 import com.example.demo.Controller.dto.EsporteResponseDTO;
@@ -13,13 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/esportes") // Define o prefixo da URL para todos os endpoints neste controller
+@RequestMapping("/api/esportes") 
 public class EsporteController {
 
     @Autowired
     private EsporteService esporteService;
 
-    @PostMapping // Mapeia para requisições HTTP POST para /api/esportes
+    @PostMapping 
     public ResponseEntity<?> criarEsporte(@RequestBody Esporte esporte) {
         try {
             Esporte novoEsporte = esporteService.criarEsporte(esporte);
@@ -31,7 +30,7 @@ public class EsporteController {
         }
     }
 
-    @GetMapping // Mapeia para requisições HTTP GET para /api/esportes
+    @GetMapping 
     public ResponseEntity<List<EsporteResponseDTO>> listarEsportes() {
         // 1. Busca todos os esportes do serviço
         List<Esporte> esportes = esporteService.listarTodos();

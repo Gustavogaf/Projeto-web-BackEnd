@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Controller/TecnicoController.java
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Atleta;
@@ -80,7 +79,7 @@ public class TecnicoController {
         }
     }
 
-    // NOVO ENDPOINT: REMOVER ATLETA DA EQUIPE
+    
     @DeleteMapping("/{matriculaTecnico}/atletas/{matriculaAtleta}")
     public ResponseEntity<?> removerAtletaDaEquipe(
             @PathVariable String matriculaTecnico,

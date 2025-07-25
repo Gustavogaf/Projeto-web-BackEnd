@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/Equipe.java
 package com.example.demo.Model;
 
 import jakarta.persistence.*;
@@ -12,7 +11,7 @@ public class Equipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Adicione este campo se ele não existir
+    
     @Column(nullable = false)
     private String nome;
 
@@ -33,7 +32,6 @@ public class Equipe {
 
     private int pontos = 0; // Novo campo para os pontos!
 
-    // --- GARANTA QUE OS GETTERS E SETTERS ESTÃO COMPLETOS ---
 
     public Long getId() {
         return id;
@@ -47,7 +45,6 @@ public class Equipe {
         return nome;
     }
 
-    // Certifique-se de que este método está implementado corretamente
     public void setNome(String nome) {
         this.nome = nome;
     }

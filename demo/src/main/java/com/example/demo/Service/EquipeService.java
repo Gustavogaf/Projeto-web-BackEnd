@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/EquipeService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.Equipe;

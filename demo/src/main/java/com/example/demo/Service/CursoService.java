@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/CursoService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.Curso;
@@ -51,10 +50,7 @@ public class CursoService {
         if (!cursoRepository.existsById(id)) {
             throw new Exception("Curso com o ID " + id + " não encontrado.");
         }
-        // Adicionar aqui uma verificação se o curso está sendo usado por alguma equipe antes de deletar
-        // if (equipeRepository.existsByCursoId(id)) {
-        //     throw new Exception("Não é possível deletar o curso, pois ele já está associado a uma ou mais equipes.");
-        // }
+        
         cursoRepository.deleteById(id);
     }
 }

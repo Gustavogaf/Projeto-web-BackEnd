@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Service/TorneioService.java
 package com.example.demo.Service;
 
 import com.example.demo.Model.*;
@@ -237,7 +236,7 @@ public class TorneioService {
         Collections.shuffle(pote1_primeiros);
         Collections.shuffle(pote2_segundos);
 
-        // --- LÓGICA DE AJUSTE DE CHAVE (REQUISITO 20) ---
+        // --- LÓGICA DE AJUSTE DE CHAVE ---
 
         int totalClassificados = pote1_primeiros.size() + pote2_segundos.size();
         if (totalClassificados < 2) {

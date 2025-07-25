@@ -1,4 +1,4 @@
-// src/main/java/com/example/demo/Controller/dto/EquipeResponseDTO.java
+
 package com.example.demo.Controller.dto;
 
 import com.example.demo.Model.Equipe;

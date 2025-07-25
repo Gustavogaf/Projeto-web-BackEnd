@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Controller/CoordenadorController.java
 package com.example.demo.Controller;
 
 import com.example.demo.Controller.dto.UsuarioResponseDTO;
@@ -43,7 +42,7 @@ public class CoordenadorController {
         }
     }
 
-    // NOVO ENDPOINT: DELETAR TÉCNICO
+    
     @DeleteMapping("/{matriculaCoordenador}/tecnicos/{matriculaTecnico}")
     public ResponseEntity<?> deletarTecnico(
             @PathVariable String matriculaCoordenador,

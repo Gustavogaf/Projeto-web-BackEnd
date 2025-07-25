@@ -1,4 +1,3 @@
-// src/main/java/com/example/demo/Model/Atleta.java
 package com.example.demo.Model;
 
 import jakarta.persistence.Column;
@@ -7,7 +6,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 
 @Entity
-@PrimaryKeyJoinColumn(name = "matricula") // <-- ALTERE DE "usuario_matricula" PARA "matricula"
+@PrimaryKeyJoinColumn(name = "matricula") 
 public class Atleta extends Usuario {
 
     private String apelido;
@@ -19,7 +18,6 @@ public class Atleta extends Usuario {
     private Equipe equipe;
 
     // Getters e Setters...
-    // (O resto da classe continua igual)
     public String getApelido() {
         return apelido;
     }
