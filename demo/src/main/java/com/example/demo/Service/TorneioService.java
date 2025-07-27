@@ -60,7 +60,7 @@ public class TorneioService {
         // 4. GERAR A PRÓXIMA FASE, TRATANDO O "BYE" SE NECESSÁRIO
         Collections.shuffle(vencedores); // Sorteia os confrontos
 
-        // --- NOVA LÓGICA DO BYE (REQUISITO 20) ---
+        
         if (vencedores.size() % 2 != 0 && vencedores.size() > 1) {
             Equipe equipeComBye = vencedores.remove(0); // A primeira equipe da lista embaralhada avança
             System.out.println("Equipe " + equipeComBye.getNome() + " avançou automaticamente (bye).");
