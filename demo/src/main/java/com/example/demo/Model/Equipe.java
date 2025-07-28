@@ -1,5 +1,6 @@
 package com.example.demo.Model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Equipe {
     private Tecnico tecnico;
 
     @OneToMany(mappedBy = "equipe", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Atleta> atletas = new ArrayList<>();
 
     private int pontos = 0; // Novo campo para os pontos!

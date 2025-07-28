@@ -1,5 +1,6 @@
 package com.example.demo.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -16,6 +17,7 @@ public class Atleta extends Usuario {
     private String telefone;
 
     @ManyToOne // Vários atletas pertencem a uma equipe
+    @JsonBackReference
     private Equipe equipe;
 
     @ManyToOne // Vários atletas podem ser cadastrados por um técnico

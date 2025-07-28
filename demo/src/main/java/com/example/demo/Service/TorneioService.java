@@ -6,6 +6,8 @@ import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Repository.TorneioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -89,7 +91,8 @@ public class TorneioService {
 
         return partidaRepository.saveAll(proximaFase);
     }
-
+    
+    @Transactional
     public Torneio iniciarFaseDeGrupos(Esporte esporte, CategoriaCurso categoria) throws Exception {
         // 1. BUSCAR EQUIPES INSCRITAS
         List<Equipe> equipesInscritas = equipeRepository.findByEsporteAndCurso_Categoria(esporte, categoria);
@@ -98,18 +101,21 @@ public class TorneioService {
                     + " na categoria " + categoria);
         }
 
-        // 2. CRIAR E SALVAR O TORNEIO
+        // 2. CRIAR E SALVAR O TORNEIO *ANTES* DE GERAR AS PARTIDAS
         Torneio torneio = new Torneio();
         torneio.setEsporte(esporte);
         torneio.setCategoria(categoria);
+        torneio.setGrupos(new ArrayList<>()); // Inicializa a lista de grupos
+        Torneio torneioSalvo = torneioRepository.save(torneio);
+
 
         // 3. DISTRIBUIR EQUIPES NOS GRUPOS (Requisitos 14, 15, 16)
-        distribuirEquipesNosGrupos(torneio, equipesInscritas);
+        distribuirEquipesNosGrupos(torneioSalvo, equipesInscritas);
 
         // 4. GERAR PARTIDAS DA FASE DE GRUPOS (Requisito 15 - todos contra todos)
-        gerarPartidasDosGrupos(torneio);
+        gerarPartidasDosGrupos(torneioSalvo);
 
-        return torneioRepository.save(torneio);
+        return torneioRepository.save(torneioSalvo);
     }
 
     private void distribuirEquipesNosGrupos(Torneio torneio, List<Equipe> equipes) {
@@ -176,6 +182,7 @@ public class TorneioService {
     // Mapa para controlar o último horário agendado para cada equipe
     Map<Long, LocalDateTime> ultimoHorarioPorEquipe = new HashMap<>();
     LocalDateTime proximoHorarioDisponivel = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0);
+    List<Partida> partidasParaSalvar = new ArrayList<>();
 
     for (Grupo grupo : torneio.getGrupos()) {
         List<Equipe> equipesDoGrupo = grupo.getEquipes();
@@ -203,7 +210,7 @@ public class TorneioService {
                 partida.setDataHora(horarioDaPartida);
                 partida.setTorneio(torneio); // Manter o vínculo com o torneio
                 
-                partidaRepository.save(partida);
+                partidasParaSalvar.add(partida);
 
                 // Atualizar o último horário para ambas as equipes
                 // Adicionamos 2 horas para o jogo e 1 hora de descanso
@@ -216,6 +223,7 @@ public class TorneioService {
             }
         }
     }
+    partidaRepository.saveAll(partidasParaSalvar);
 }
 
     public List<Partida> gerarMataMata(Long torneioId) throws Exception {
