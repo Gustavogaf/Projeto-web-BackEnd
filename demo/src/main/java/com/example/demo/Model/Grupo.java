@@ -1,5 +1,6 @@
 package com.example.demo.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class Grupo {
     private List<Equipe> equipes = new ArrayList<>();
 
     @ManyToOne
+    @JsonBackReference
     private Torneio torneio;
 
     // Getters e Setters

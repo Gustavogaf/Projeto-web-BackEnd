@@ -25,7 +25,7 @@ public class AdminController {
     public ResponseEntity<?> cadastrarCoordenador(@RequestBody Coordenador coordenador) {
         try {
             Coordenador novoCoordenador = adminService.cadastrarCoordenador(coordenador);
-            return new ResponseEntity<>(novoCoordenador, HttpStatus.CREATED);
+            return new ResponseEntity<>(new UsuarioResponseDTO(novoCoordenador), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -41,7 +41,8 @@ public class AdminController {
     }
 
     @PutMapping("/coordenadores/{matricula}")
-    public ResponseEntity<?> atualizarCoordenador(@PathVariable String matricula, @RequestBody Coordenador detalhesCoordenador) {
+    public ResponseEntity<?> atualizarCoordenador(@PathVariable String matricula,
+            @RequestBody Coordenador detalhesCoordenador) {
         try {
             Coordenador coordenadorAtualizado = adminService.atualizarCoordenador(matricula, detalhesCoordenador);
             return ResponseEntity.ok(new UsuarioResponseDTO(coordenadorAtualizado));
@@ -50,7 +51,6 @@ public class AdminController {
         }
     }
 
-    
     @DeleteMapping("/coordenadores/{matricula}")
     public ResponseEntity<?> deletarCoordenador(@PathVariable String matricula) {
         try {

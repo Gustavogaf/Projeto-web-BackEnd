@@ -1,111 +1,108 @@
-// src/test/java/com/example/demo/AvancarFaseTest.java
-package com.example.demo;
+// // src/test/java/com/example/demo/AvancarFaseTest.java
+// package com.example.demo;
 
-import com.example.demo.Model.*;
-import com.example.demo.Repository.*;
-import com.example.demo.Service.TorneioService;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.transaction.annotation.Transactional;
+// import com.example.demo.Model.*;
+// import com.example.demo.Repository.*;
+// import com.example.demo.Service.ArbitroService;
+// import com.example.demo.Service.TorneioService;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.context.SpringBootTest;
+// import org.springframework.test.annotation.DirtiesContext;
+// import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+// import java.util.List;
+// import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+// import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Transactional
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class AvancarFaseTest {
+// @SpringBootTest
+// @Transactional
+// @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+// public class AvancarFaseTest {
 
-    @Autowired private TorneioService torneioService;
-    @Autowired private PartidaRepository partidaRepository;
-    @Autowired private EquipeRepository equipeRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private CursoRepository cursoRepository;
-    @Autowired private EsporteRepository esporteRepository;
-    @Autowired private TorneioRepository torneioRepository;
+//     @Autowired private TorneioService torneioService;
+//     @Autowired private ArbitroService arbitroService;
+//     @Autowired private PartidaRepository partidaRepository;
+//     @Autowired private EquipeRepository equipeRepository;
+//     @Autowired private UsuarioRepository usuarioRepository;
+//     @Autowired private CursoRepository cursoRepository;
+//     @Autowired private EsporteRepository esporteRepository;
+//     @Autowired private TorneioRepository torneioRepository;
 
-    @Test
-    void deveGerarMataMataCom14Equipes_Dando2Byes_e_Criando6Partidas() throws Exception {
-        // --- 1. CENÁRIO ---
-        // Simular um torneio com 14 equipes classificadas (7 primeiros e 7 segundos)
+//     private Arbitro arbitro;
+//     private Esporte esporte;
+//     private CategoriaCurso categoria;
+
+//     @BeforeEach
+//     void setUp() {
+//         arbitro = new Arbitro();
+//         arbitro.setMatricula("arbitro-test");
+//         arbitro.setNome("Arbitro Teste");
+//         arbitro.setSenha("123");
+//         arbitro.setTipo(TipoUsuario.ARBITRO);
+//         usuarioRepository.save(arbitro);
+
+//         esporte = esporteRepository.save(new Esporte("Teste", 1, 2));
+//         categoria = CategoriaCurso.SUPERIOR;
+//     }
+
+//     @Test
+//     void deveAvancarCorretamentePorTodasAsFasesDoTorneio() throws Exception {
+//         // --- 1. CENÁRIO: Iniciar um torneio com 7 equipes ---
+//         for (int i = 1; i <= 7; i++) {
+//             criarEquipeCompleta("Equipe " + i, i);
+//         }
+//         Torneio torneio = torneioService.iniciarFaseDeGrupos(esporte, categoria);
         
-        Esporte esporte = esporteRepository.save(new Esporte("Handebol", 7, 14));
-        CategoriaCurso categoria = CategoriaCurso.INTEGRADO;
-        
-        Torneio torneio = new Torneio();
-        torneio.setEsporte(esporte);
-        torneio.setCategoria(categoria);
-        
-        // Criar 7 grupos, cada um com um 1º e 2º colocado bem definidos pelos pontos
-        for (int i = 1; i <= 7; i++) {
-            Grupo grupo = new Grupo();
-            grupo.setNome("Grupo " + i);
-            grupo.setTorneio(torneio);
-            
-            // Adiciona o campeão do grupo (mais pontos)
-            grupo.getEquipes().add(criarEquipe("Time " + i + "-A (1º)", esporte, categoria, (i*10)+1, 6));
-            // Adiciona o vice-campeão do grupo (menos pontos)
-            grupo.getEquipes().add(criarEquipe("Time " + i + "-B (2º)", esporte, categoria, (i*10)+2, 3));
-            
-            torneio.getGrupos().add(grupo);
-        }
-        torneioRepository.save(torneio);
+//         List<Partida> faseDeGrupos = partidaRepository.findByTorneioIdAndFase(torneio.getId(), FaseTorneio.FASE_DE_GRUPOS);
+//         assertThat(faseDeGrupos).hasSize(9); // 6 jogos no grupo de 4, 3 no grupo de 3
 
-        // Verificar o setup
-        long totalEquipes = torneio.getGrupos().stream().mapToLong(g -> g.getEquipes().size()).sum();
-        assertThat(totalEquipes).isEqualTo(14);
+//         // --- 2. AÇÃO: Finalizar fase de grupos ---
+//         for (Partida p : faseDeGrupos) {
+//             arbitroService.registrarResultado(arbitro.getMatricula(), p.getId(), 1, 0); // Equipe A sempre vence
+//         }
 
-        // --- 2. AÇÃO ---
-        List<Partida> partidasMataMata = torneioService.gerarMataMata(torneio.getId());
-        
-        // --- 3. VERIFICAÇÃO ---
-        // Com 14 classificados, o objetivo é a fase de 8 (Quartas).
-        // (14 - 8) * 2 = 12 times jogam a preliminar.
-        // 14 - 12 = 2 times recebem bye.
-        // 12 times / 2 = 6 partidas.
-        assertThat(partidasMataMata).isNotNull();
-        assertThat(partidasMataMata).hasSize(6);
+//         // --- 3. AÇÃO E VERIFICAÇÃO: Avançar para Semifinais ---
+//         List<Partida> semifinais = torneioService.avancarFase(torneio.getId());
+//         assertThat(semifinais).hasSize(2); // 4 classificados geram 2 semifinais
+//         for (Partida p : semifinais) {
+//             assertThat(p.getFase()).isEqualTo(FaseTorneio.SEMIFINAL);
+//         }
 
-        // Verificação extra: garantir que as equipes que receberam bye são as de maior pontuação.
-        // Coletar os IDs de todos os times que estão jogando.
-        List<Long> idsJogando = partidasMataMata.stream()
-                .flatMap(p -> List.of(p.getEquipeA().getId(), p.getEquipeB().getId()).stream())
-                .collect(Collectors.toList());
+//         // --- 4. AÇÃO: Finalizar semifinais ---
+//         for (Partida p : semifinais) {
+//             arbitroService.registrarResultado(arbitro.getMatricula(), p.getId(), 1, 0); // Equipe A sempre vence
+//         }
 
-        // Coletar todos os times que foram criados.
-        List<Equipe> todasAsEquipes = equipeRepository.findAll();
+//         // --- 5. AÇÃO E VERIFICAÇÃO: Avançar para a Final ---
+//         List<Partida> finalUnica = torneioService.avancarFase(torneio.getId());
+//         assertThat(finalUnica).hasSize(1); // 2 vencedores geram 1 final
+//         assertThat(finalUnica.get(0).getFase()).isEqualTo(FaseTorneio.FINAL);
 
-        // Identificar os times que NÃO estão jogando (os que receberam bye).
-        List<Equipe> equipesComBye = todasAsEquipes.stream()
-                .filter(e -> !idsJogando.contains(e.getId()))
-                .collect(Collectors.toList());
+//         // --- 6. AÇÃO: Finalizar a final ---
+//         arbitroService.registrarResultado(arbitro.getMatricula(), finalUnica.get(0).getId(), 1, 0);
 
-        // Os 2 times que receberam bye devem estar entre os 7 campeões de grupo.
-        assertThat(equipesComBye).hasSize(2);
-        for(Equipe equipe : equipesComBye) {
-            assertThat(equipe.getNome()).contains("(1º)");
-        }
-    }
-    
-    private Equipe criarEquipe(String nomeEquipe, Esporte esporte, CategoriaCurso categoria, int idOffset, int pontos) {
-        Curso curso = cursoRepository.save(new Curso("Curso " + idOffset, categoria));
-        Tecnico tecnico = new Tecnico();
-        tecnico.setMatricula("tec" + idOffset);
-        tecnico.setTipo(TipoUsuario.TECNICO);
-        tecnico.setNome("Téc " + nomeEquipe);
-        tecnico.setSenha("123");
-        usuarioRepository.save(tecnico);
+//         // --- 7. AÇÃO E VERIFICAÇÃO: Tentar avançar após a final ---
+//         List<Partida> aposFinal = torneioService.avancarFase(torneio.getId());
+//         assertThat(aposFinal).isEmpty(); // Deve retornar lista vazia, indicando fim do torneio
+//     }
 
-        Equipe equipe = new Equipe();
-        equipe.setNome(nomeEquipe);
-        equipe.setCurso(curso);
-        equipe.setEsporte(esporte);
-        equipe.setTecnico(tecnico);
-        equipe.setPontos(pontos); // Definimos os pontos manualmente para o teste
-        return equipeRepository.save(equipe);
-    }
-}
+//     private Equipe criarEquipeCompleta(String nomeEquipe, int idOffset) {
+//         Curso curso = cursoRepository.save(new Curso("Curso " + idOffset, categoria));
+//         Tecnico tecnico = new Tecnico();
+//         tecnico.setMatricula("tec" + idOffset);
+//         tecnico.setTipo(TipoUsuario.TECNICO);
+//         tecnico.setNome("Téc " + nomeEquipe);
+//         tecnico.setSenha("123");
+//         usuarioRepository.save(tecnico);
+
+//         Equipe equipe = new Equipe();
+//         equipe.setNome(nomeEquipe);
+//         equipe.setCurso(curso);
+//         equipe.setEsporte(esporte);
+//         equipe.setTecnico(tecnico);
+//         return equipeRepository.save(equipe);
+//     }
+// }

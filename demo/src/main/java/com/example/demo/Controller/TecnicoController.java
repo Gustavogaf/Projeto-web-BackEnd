@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import com.example.demo.Controller.dto.AtletaResponseDTO;
 import com.example.demo.Controller.dto.CadastroEquipeRequest;
 import com.example.demo.Controller.dto.UsuarioResponseDTO;
+import com.example.demo.Controller.dto.EquipeResponseDTO;
 
 @RestController
 @RequestMapping("/api/tecnicos")
@@ -36,7 +37,7 @@ public class TecnicoController {
                     request.getEquipe(),
                     request.getMatriculasAtletas()
             );
-            return new ResponseEntity<>(equipeSalva, HttpStatus.CREATED);
+            return new ResponseEntity<>(new EquipeResponseDTO(equipeSalva), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -1,5 +1,6 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Controller.dto.PartidaResponseDTO;
 import com.example.demo.Model.CategoriaCurso;
 import com.example.demo.Model.Esporte;
 import com.example.demo.Model.Partida;
@@ -21,6 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.Controller.dto.IniciarTorneioRequest;
 import com.example.demo.Controller.dto.TorneioResponseDTO;
+import com.example.demo.Controller.dto.PartidaResponseDTO;
+import com.example.demo.Repository.PartidaRepository;
+import com.example.demo.Controller.dto.AvancoFaseResponse;
+
 
 @RestController
 @RequestMapping("/api/torneios")
@@ -49,17 +54,13 @@ public class TorneioController {
     @PostMapping("/{torneioId}/avancar-fase")
     public ResponseEntity<?> avancarFaseDoTorneio(@PathVariable Long torneioId) {
         try {
-            List<Partida> proximaFase = torneioService.avancarFase(torneioId);
+            // O serviço agora retorna um objeto de resposta completo
+            AvancoFaseResponse response = torneioService.avancarFase(torneioId);
+            
+            // Retorna a resposta completa com status OK
+            return new ResponseEntity<>(response, HttpStatus.OK);
 
-            if (proximaFase.isEmpty()) {
-                // Se a lista de partidas estiver vazia, significa que o torneio acabou.
-                return new ResponseEntity<>("Torneio finalizado! Campeão determinado.", HttpStatus.OK);
-            }
-
-            // Retorna a lista de partidas da nova fase.
-            return new ResponseEntity<>(proximaFase, HttpStatus.CREATED);
         } catch (Exception e) {
-            // Retorna a mensagem de erro (ex: "Ainda existem partidas agendadas...")
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -74,8 +75,12 @@ public class TorneioController {
     }
 
     @GetMapping("/{torneioId}/partidas")
-    public ResponseEntity<List<Partida>> listarPartidasDoTorneio(@PathVariable Long torneioId) {
+    public ResponseEntity<List<PartidaResponseDTO>> listarPartidasDoTorneio(@PathVariable Long torneioId) {
         List<Partida> partidas = partidaRepository.findByTorneioIdOrderByDataHoraDesc(torneioId);
-        return ResponseEntity.ok(partidas);
+        // Mapeia a lista de Partida para uma lista de PartidaResponseDTO
+        List<PartidaResponseDTO> response = partidas.stream()
+                .map(PartidaResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 }

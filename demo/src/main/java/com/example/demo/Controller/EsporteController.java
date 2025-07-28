@@ -12,25 +12,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/esportes") 
+@RequestMapping("/api/esportes")
 public class EsporteController {
 
     @Autowired
     private EsporteService esporteService;
 
-    @PostMapping 
+    @PostMapping
     public ResponseEntity<?> criarEsporte(@RequestBody Esporte esporte) {
         try {
             Esporte novoEsporte = esporteService.criarEsporte(esporte);
             // Retorna o novo esporte criado e o status 201 Created
-            return new ResponseEntity<>(novoEsporte, HttpStatus.CREATED);
+            return new ResponseEntity<>(new EsporteResponseDTO(novoEsporte), HttpStatus.CREATED);
         } catch (Exception e) {
-            // Em caso de erro (ex: nome duplicado), retorna a mensagem de erro e o status 400 Bad Request
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @GetMapping 
+    @GetMapping
     public ResponseEntity<List<EsporteResponseDTO>> listarEsportes() {
         // 1. Busca todos os esportes do serviço
         List<Esporte> esportes = esporteService.listarTodos();
@@ -39,7 +38,7 @@ public class EsporteController {
         List<EsporteResponseDTO> response = esportes.stream()
                 .map(EsporteResponseDTO::new)
                 .toList();
-        
+
         // 3. Retorna a lista de DTOs com o status 200 OK
         return ResponseEntity.ok(response);
     }

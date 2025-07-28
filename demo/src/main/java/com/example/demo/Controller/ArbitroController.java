@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.Controller.dto.PlacarRequest;
 import com.example.demo.Controller.dto.RegistroWORequest;
+import com.example.demo.Controller.dto.PartidaResponseDTO;
 
 @RestController
 @RequestMapping("/api/arbitros")
@@ -30,7 +31,7 @@ public class ArbitroController {
                     placar.getPlacarA(),
                     placar.getPlacarB());
             // Retorna a partida com o resultado atualizado e o status 200 OK
-            return new ResponseEntity<>(partidaAtualizada, HttpStatus.OK);
+            return new ResponseEntity<>(new PartidaResponseDTO(partidaAtualizada), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

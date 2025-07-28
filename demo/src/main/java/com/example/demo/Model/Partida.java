@@ -29,10 +29,21 @@ public class Partida {
     @Enumerated(EnumType.STRING)
     private StatusPartida status;
 
+    @Enumerated(EnumType.STRING) 
+    private FaseTorneio fase;      
+
     // Construtores, Getters e Setters
 
     public Partida() {
         this.status = StatusPartida.AGENDADA; // Uma nova partida sempre começa como agendada
+    }
+    
+    public FaseTorneio getFase() {
+        return fase;
+    }
+
+    public void setFase(FaseTorneio fase) {
+        this.fase = fase;
     }
     
     public Long getId() {

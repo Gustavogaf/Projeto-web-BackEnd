@@ -19,10 +19,10 @@ public class CoordenadorController {
     public ResponseEntity<?> cadastrarTecnico(
             @PathVariable String matriculaCoordenador,
             @RequestBody Tecnico novoTecnico) {
-        
+
         try {
             Tecnico tecnicoSalvo = coordenadorService.cadastrarTecnico(matriculaCoordenador, novoTecnico);
-            return new ResponseEntity<>(tecnicoSalvo, HttpStatus.CREATED);
+            return new ResponseEntity<>(new UsuarioResponseDTO(tecnicoSalvo), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -33,21 +33,21 @@ public class CoordenadorController {
             @PathVariable String matriculaCoordenador,
             @PathVariable String matriculaTecnico,
             @RequestBody Tecnico detalhesTecnico) {
-        
+
         try {
-            Tecnico tecnicoAtualizado = coordenadorService.atualizarTecnico(matriculaCoordenador, matriculaTecnico, detalhesTecnico);
+            Tecnico tecnicoAtualizado = coordenadorService.atualizarTecnico(matriculaCoordenador, matriculaTecnico,
+                    detalhesTecnico);
             return ResponseEntity.ok(new UsuarioResponseDTO(tecnicoAtualizado));
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    
     @DeleteMapping("/{matriculaCoordenador}/tecnicos/{matriculaTecnico}")
     public ResponseEntity<?> deletarTecnico(
             @PathVariable String matriculaCoordenador,
             @PathVariable String matriculaTecnico) {
-            
+
         try {
             coordenadorService.deletarTecnico(matriculaCoordenador, matriculaTecnico);
             return ResponseEntity.ok("Técnico com matrícula " + matriculaTecnico + " deletado com sucesso.");
