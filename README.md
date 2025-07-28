@@ -273,6 +273,10 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Descrição**: Permite que um técnico remova (desassocie) um atleta de sua equipe.
 * **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
+#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}/db`
+* **Descrição**: Permite que um técnico delete permanentemente um atleta do banco de dados (desde que o atleta não esteja em uma equipe e o técnico seja quem o cadastrou).
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
 #### `GET /api/equipes`
 * **Descrição**: Lista todas as equipes.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EquipeResponseDTO`.
