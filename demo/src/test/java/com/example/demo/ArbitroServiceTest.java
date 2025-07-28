@@ -95,4 +95,62 @@ public class ArbitroServiceTest {
         assertThat(equipeAVerificada.getPontos()).isEqualTo(3);
         assertThat(equipeBVerificada.getPontos()).isZero();
     }
+    
+    @Test
+    void deveReverterResultadoDePartidaWO() throws Exception {
+        // --- 1. CENÁRIO (SETUP) ---
+        Curso cursoA = cursoRepository.save(new Curso("Sistemas de Informação", CategoriaCurso.SUPERIOR));
+        Curso cursoB = cursoRepository.save(new Curso("Engenharia Civil", CategoriaCurso.SUPERIOR));
+        Esporte esporte = esporteRepository.save(new Esporte("Vôlei", 6, 12));
+        Tecnico tecnicoA = new Tecnico();
+        tecnicoA.setMatricula("tecVoleiA");
+        tecnicoA.setTipo(TipoUsuario.TECNICO);
+        tecnicoA.setNome("Bernardinho");
+        tecnicoA.setSenha("123");
+        usuarioRepository.save(tecnicoA);
+        Tecnico tecnicoB = new Tecnico();
+        tecnicoB.setMatricula("tecVoleiB");
+        tecnicoB.setTipo(TipoUsuario.TECNICO);
+        tecnicoB.setNome("Zé Roberto");
+        tecnicoB.setSenha("456");
+        usuarioRepository.save(tecnicoB);
+        Equipe equipeA = new Equipe();
+        equipeA.setNome("Equipe A");
+        equipeA.setCurso(cursoA);
+        equipeA.setEsporte(esporte);
+        equipeA.setTecnico(tecnicoA);
+        equipeRepository.save(equipeA);
+        Equipe equipeB = new Equipe();
+        equipeB.setNome("Equipe B");
+        equipeB.setCurso(cursoB);
+        equipeB.setEsporte(esporte);
+        equipeB.setTecnico(tecnicoB);
+        equipeRepository.save(equipeB);
+        Arbitro arbitro = new Arbitro();
+        arbitro.setMatricula("arb001");
+        arbitro.setNome("Árbitro Oficial");
+        arbitro.setSenha("senha");
+        arbitro.setTipo(TipoUsuario.ARBITRO);
+        usuarioRepository.save(arbitro);
+        Partida partidaAgendada = new Partida();
+        partidaAgendada.setEquipeA(equipeA);
+        partidaAgendada.setEquipeB(equipeB);
+        partidaAgendada.setDataHora(LocalDateTime.now());
+        partidaRepository.save(partidaAgendada);
+    
+        // Registrar o W.O. primeiro para ter o que reverter
+        arbitroService.registrarWO(arbitro.getMatricula(), partidaAgendada.getId(), equipeA.getId());
+    
+        // --- 2. AÇÃO ---
+        Partida partidaRevertida = arbitroService.reverterResultado(arbitro.getMatricula(), partidaAgendada.getId());
+    
+        // --- 3. VERIFICAÇÃO ---
+        assertThat(partidaRevertida.getStatus()).isEqualTo(StatusPartida.AGENDADA);
+        assertThat(partidaRevertida.getPlacarEquipeA()).isNull();
+        assertThat(partidaRevertida.getPlacarEquipeB()).isNull();
+    
+        // Verificar se os pontos da equipe foram revertidos
+        Equipe equipeAVerificada = equipeRepository.findById(equipeA.getId()).orElseThrow();
+        assertThat(equipeAVerificada.getPontos()).isZero();
+    }
 }

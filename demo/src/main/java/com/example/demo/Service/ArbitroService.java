@@ -6,6 +6,7 @@ import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -21,6 +22,7 @@ public class ArbitroService {
      @Autowired
     private EquipeRepository equipeRepository;
 
+    @Transactional
     public Partida registrarResultado(String matriculaArbitro, Long partidaId, int placarA, int placarB) throws Exception {
         // 1. VERIFICAR SE O SOLICITANTE É UM ÁRBITRO
         Optional<Usuario> arbitroOpt = usuarioRepository.findById(matriculaArbitro);
@@ -97,5 +99,51 @@ public class ArbitroService {
     }
 
     return partidaRepository.save(partida);
-}
+    }
+
+    @Transactional
+    public Partida reverterResultado(String matriculaArbitro, Long partidaId) throws Exception {
+        // 1. Validar se o usuário é um árbitro
+        usuarioRepository.findById(matriculaArbitro)
+                .filter(u -> u.getTipo() == TipoUsuario.ARBITRO)
+                .orElseThrow(() -> new Exception("Apenas usuários do tipo ARBITRO podem reverter resultados."));
+    
+        // 2. Buscar a partida
+        Partida partida = partidaRepository.findById(partidaId)
+                .orElseThrow(() -> new Exception("Partida com o ID " + partidaId + " não encontrada."));
+    
+        StatusPartida statusAtual = partida.getStatus();
+        if (statusAtual == StatusPartida.AGENDADA) {
+            throw new Exception("Esta partida ainda está agendada e não pode ser revertida.");
+        }
+    
+        // 3. Reverter os pontos das equipes
+        Equipe equipeA = partida.getEquipeA();
+        Equipe equipeB = partida.getEquipeB();
+    
+        if (statusAtual == StatusPartida.FINALIZADA) {
+            if (partida.getPlacarEquipeA() > partida.getPlacarEquipeB()) {
+                equipeA.setPontos(equipeA.getPontos() - 3);
+            } else if (partida.getPlacarEquipeB() > partida.getPlacarEquipeA()) {
+                equipeB.setPontos(equipeB.getPontos() - 3);
+            } else {
+                equipeA.setPontos(equipeA.getPontos() - 1);
+                equipeB.setPontos(equipeB.getPontos() - 1);
+            }
+        } else if (statusAtual == StatusPartida.WO_EQUIPE_B) {
+            equipeA.setPontos(equipeA.getPontos() - 3);
+        } else if (statusAtual == StatusPartida.WO_EQUIPE_A) {
+            equipeB.setPontos(equipeB.getPontos() - 3);
+        }
+    
+        equipeRepository.save(equipeA);
+        equipeRepository.save(equipeB);
+    
+        // 4. Resetar o status e o placar da partida
+        partida.setStatus(StatusPartida.AGENDADA);
+        partida.setPlacarEquipeA(null);
+        partida.setPlacarEquipeB(null);
+    
+        return partidaRepository.save(partida);
+    }
 }

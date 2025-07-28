@@ -324,3 +324,7 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     }
     ```
 * **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
+
+#### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/reverter`
+* **Descrição**: Permite que um árbitro reverta o resultado de uma partida (normal ou W.O), retornando-a ao status "AGENDADA".
+* **Resposta de Sucesso (200 OK)**: O objeto da partida revertida.
