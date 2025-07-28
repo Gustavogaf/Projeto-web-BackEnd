@@ -240,6 +240,10 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     ```
 * **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
 
+#### `DELETE /api/tecnicos/{matriculaTecnico}/equipes/{equipeId}`
+* **Descrição**: Permite que um técnico delete sua própria equipe (desde que a equipe não tenha partidas em um torneio).
+* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+
 #### `POST /api/tecnicos/{matriculaTecnico}/atletas`
 * **Descrição**: Permite que um técnico cadastre um novo atleta.
 * **Corpo da Requisição (Exemplo)**:

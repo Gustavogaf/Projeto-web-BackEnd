@@ -4,6 +4,7 @@ import com.example.demo.Model.*;
 import com.example.demo.Repository.CursoRepository;
 import com.example.demo.Repository.EquipeRepository;
 import com.example.demo.Repository.EsporteRepository;
+import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public class TecnicoService {
     private CursoRepository cursoRepository;
     @Autowired
     private EsporteRepository esporteRepository;
+    @Autowired
+    private PartidaRepository partidaRepository;
 
     
     @Transactional // Garante que todas as operações de banco de dados aconteçam em uma única transação
@@ -85,13 +88,15 @@ public class TecnicoService {
     
     
     public Atleta cadastrarAtleta(String matriculaTecnico, Atleta novoAtleta) throws Exception {
-        if (!usuarioRepository.existsById(matriculaTecnico) || usuarioRepository.findById(matriculaTecnico).get().getTipo() != TipoUsuario.TECNICO) {
-            throw new Exception("Apenas usuários do tipo TECNICO podem cadastrar atletas.");
-        }
+        Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)
+            .filter(u -> u.getTipo() == TipoUsuario.TECNICO)
+            .orElseThrow(() -> new Exception("Apenas usuários do tipo TECNICO podem cadastrar atletas."));
+
         if (usuarioRepository.existsById(novoAtleta.getMatricula())) {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoAtleta.getMatricula());
         }
         novoAtleta.setTipo(TipoUsuario.ATLETA);
+        novoAtleta.setCadastradoPor(tecnico);
         return usuarioRepository.save(novoAtleta);
     }
     
@@ -148,5 +153,57 @@ public class TecnicoService {
         // Remove a associação do atleta com a equipe
         atleta.setEquipe(null);
         usuarioRepository.save(atleta);
+    }
+
+    public void deletarAtleta(String matriculaTecnico, String matriculaAtleta) throws Exception {
+        // 1. Valida se quem está requisitando é um técnico
+        Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)
+                .filter(u -> u.getTipo() == TipoUsuario.TECNICO)
+                .orElseThrow(() -> new Exception("Usuário com a matrícula " + matriculaTecnico + " não é um técnico."));
+    
+        // 2. Busca o atleta
+        Atleta atleta = (Atleta) usuarioRepository.findById(matriculaAtleta)
+                .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
+                .orElseThrow(() -> new Exception("Atleta com a matrícula " + matriculaAtleta + " não encontrado."));
+    
+        // 3. Regra de Negócio: Não permitir deleção se o atleta estiver em uma equipe
+        if (atleta.getEquipe() != null) {
+            throw new Exception("Não é possível deletar o atleta, pois ele está associado a uma equipe. Remova-o da equipe primeiro.");
+        }
+    
+        // 4. Regra de Negócio: Somente o técnico que o cadastrou pode deletar
+        if (atleta.getCadastradoPor() != null && !atleta.getCadastradoPor().getMatricula().equals(tecnico.getMatricula())) {
+            throw new Exception("Você não tem permissão para deletar este atleta, pois não foi você quem o cadastrou.");
+        }
+    
+        // 5. Deleta o atleta do banco de dados
+        usuarioRepository.deleteById(matriculaAtleta);
+    }
+    
+    @Transactional
+    public void deletarEquipe(String matriculaTecnico, Long equipeId) throws Exception {
+        // 1. Validar e buscar a equipe
+        Equipe equipe = equipeRepository.findById(equipeId)
+                .orElseThrow(() -> new Exception("Equipe com o ID " + equipeId + " não encontrada."));
+
+        // 2. Validar se o requisitante é o técnico da equipe
+        if (!equipe.getTecnico().getMatricula().equals(matriculaTecnico)) {
+            throw new Exception("Você não tem permissão para deletar esta equipe.");
+        }
+    
+        // 3. Regra de Negócio: Não permitir deleção se a equipe tiver partidas
+        if (partidaRepository.existsByEquipeAOrEquipeB(equipe, equipe)) {
+            throw new Exception("Não é possível deletar esta equipe, pois ela já está associada a partidas em um torneio.");
+        }
+    
+        // 4. Desassociar todos os atletas da equipe
+        for (Atleta atleta : new ArrayList<>(equipe.getAtletas())) {
+            atleta.setEquipe(null);
+            usuarioRepository.save(atleta);
+        }
+        equipe.getAtletas().clear();
+    
+        // 5. Deletar a equipe
+        equipeRepository.delete(equipe);
     }
 }

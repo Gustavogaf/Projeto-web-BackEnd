@@ -145,4 +145,39 @@ public class TecnicoControllerTest {
         resultado.andExpect(status().isBadRequest())
                  .andExpect(content().string("Você não tem permissão para remover atletas desta equipe."));
     }
+
+    @Test
+    public void deveDeletarAtletaDoBancoComSucesso() throws Exception {
+        // Cenário
+        String matriculaTecnico = "tec-cadastro";
+        String matriculaAtleta = "atl-delete";
+        doNothing().when(tecnicoService).deletarAtleta(matriculaTecnico, matriculaAtleta);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(delete("/api/tecnicos/{mt}/atletas/{ma}/db", matriculaTecnico, matriculaAtleta));
+
+        // Verificação
+        resultado.andExpect(status().isOk())
+                 .andExpect(content().string("Atleta com matrícula " + matriculaAtleta + " foi permanentemente deletado."));
+        
+        verify(tecnicoService, times(1)).deletarAtleta(matriculaTecnico, matriculaAtleta);
+    }
+
+    @Test
+    public void naoDeveDeletarAtletaSeNaoForCadastradoPeloTecnico() throws Exception {
+        // Cenário
+        String matriculaTecnico = "tec-intruso";
+        String matriculaAtleta = "atl-protegido";
+        
+        String mensagemErro = "Você não tem permissão para deletar este atleta, pois não foi você quem o cadastrou.";
+        doThrow(new Exception(mensagemErro))
+            .when(tecnicoService).deletarAtleta(matriculaTecnico, matriculaAtleta);
+
+        // Ação
+        ResultActions resultado = mockMvc.perform(delete("/api/tecnicos/{mt}/atletas/{ma}/db", matriculaTecnico, matriculaAtleta));
+
+        // Verificação
+        resultado.andExpect(status().isBadRequest())
+                 .andExpect(content().string(mensagemErro));
+    }
 }

@@ -2,6 +2,7 @@ package com.example.demo.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 
@@ -16,6 +17,10 @@ public class Atleta extends Usuario {
 
     @ManyToOne // Vários atletas pertencem a uma equipe
     private Equipe equipe;
+
+    @ManyToOne // Vários atletas podem ser cadastrados por um técnico
+    @JoinColumn(name = "tecnico_cadastro_matricula") // Nome da coluna no banco
+    private Tecnico cadastradoPor;
 
     // Getters e Setters...
     public String getApelido() {
@@ -40,5 +45,13 @@ public class Atleta extends Usuario {
 
     public void setEquipe(Equipe equipe) {
         this.equipe = equipe;
+    }
+
+    public Tecnico getCadastradoPor() {
+        return cadastradoPor;
+    }
+
+    public void setCadastradoPor(Tecnico cadastradoPor) {
+        this.cadastradoPor = cadastradoPor;
     }
 }

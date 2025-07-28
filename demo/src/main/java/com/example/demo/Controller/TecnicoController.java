@@ -92,4 +92,30 @@ public class TecnicoController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
+
+    @DeleteMapping("/{matriculaTecnico}/atletas/{matriculaAtleta}/db")
+    public ResponseEntity<?> deletarAtleta(
+            @PathVariable String matriculaTecnico,
+            @PathVariable String matriculaAtleta) {
+            
+        try {
+            tecnicoService.deletarAtleta(matriculaTecnico, matriculaAtleta);
+            return ResponseEntity.ok("Atleta com matrícula " + matriculaAtleta + " foi permanentemente deletado.");
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/{matriculaTecnico}/equipes/{equipeId}")
+    public ResponseEntity<?> deletarEquipe(
+            @PathVariable String matriculaTecnico,
+            @PathVariable Long equipeId) {
+        
+        try {
+            tecnicoService.deletarEquipe(matriculaTecnico, equipeId);
+            return ResponseEntity.ok("Equipe com ID " + equipeId + " deletada com sucesso.");
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 }
