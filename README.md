@@ -300,6 +300,10 @@ A seguir estão documentados todos os endpoints disponíveis na API.
 * **Descrição**: Lista todos os torneios.
 * **Resposta de Sucesso (200 OK)**: Uma lista de objetos `TorneioResponseDTO`.
 
+#### `GET /api/torneios/{torneioId}/partidas`
+* **Descrição**: Lista todas as partidas de um torneio específico.
+* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `Partida`.
+
 ---
 
 ### 4.7. Ações de Árbitros em Partidas

@@ -4,6 +4,7 @@ import com.example.demo.Model.CategoriaCurso;
 import com.example.demo.Model.Esporte;
 import com.example.demo.Model.Partida;
 import com.example.demo.Model.Torneio;
+import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Service.TorneioService;
 
 import java.util.List;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.Controller.dto.IniciarTorneioRequest;
 import com.example.demo.Controller.dto.TorneioResponseDTO;
 
-
 @RestController
 @RequestMapping("/api/torneios")
 public class TorneioController {
@@ -29,10 +29,13 @@ public class TorneioController {
     @Autowired
     private TorneioService torneioService;
 
+    @Autowired
+    private PartidaRepository partidaRepository;
+
     @PostMapping("/iniciar")
     public ResponseEntity<?> iniciarFaseDeGrupos(@RequestBody IniciarTorneioRequest request) {
         try {
-            
+
             Esporte esporte = new Esporte();
             esporte.setId(request.getEsporteId());
 
@@ -47,12 +50,12 @@ public class TorneioController {
     public ResponseEntity<?> avancarFaseDoTorneio(@PathVariable Long torneioId) {
         try {
             List<Partida> proximaFase = torneioService.avancarFase(torneioId);
-            
+
             if (proximaFase.isEmpty()) {
                 // Se a lista de partidas estiver vazia, significa que o torneio acabou.
                 return new ResponseEntity<>("Torneio finalizado! Campeão determinado.", HttpStatus.OK);
             }
-            
+
             // Retorna a lista de partidas da nova fase.
             return new ResponseEntity<>(proximaFase, HttpStatus.CREATED);
         } catch (Exception e) {
@@ -69,5 +72,10 @@ public class TorneioController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
-}
 
+    @GetMapping("/{torneioId}/partidas")
+    public ResponseEntity<List<Partida>> listarPartidasDoTorneio(@PathVariable Long torneioId) {
+        List<Partida> partidas = partidaRepository.findByTorneioIdOrderByDataHoraDesc(torneioId);
+        return ResponseEntity.ok(partidas);
+    }
+}
