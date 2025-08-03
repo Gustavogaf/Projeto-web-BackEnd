@@ -32,7 +32,7 @@ public class Equipe {
     @JsonManagedReference
     private List<Atleta> atletas = new ArrayList<>();
 
-    private int pontos = 0; // Novo campo para os pontos!
+    private int pontos = 0; 
 
 
     public Long getId() {

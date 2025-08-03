@@ -214,8 +214,7 @@ public class TorneioService {
         partidaRepository.saveAll(partidasParaSalvar);
     }
     
-    // O método gerarMataMata não é mais necessário, pois sua lógica foi absorvida pelo avancarFase.
-    // Você pode removê-lo ou mantê-lo como privado se desejar.
+
 
     public List<Torneio> listarTodos() {
         return torneioRepository.findAll();

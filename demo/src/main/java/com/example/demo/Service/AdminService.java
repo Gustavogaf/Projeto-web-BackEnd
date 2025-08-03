@@ -63,9 +63,6 @@ public class AdminService {
         if (usuario.getTipo() != TipoUsuario.COORDENADOR) {
             throw new Exception("O usuário especificado não é um coordenador e não pode ser deletado por esta função.");
         }
-        
-        // Regra de negócio: Adicionar futuramente a verificação se o coordenador possui dependências (ex: técnicos)
-        // Por enquanto, a deleção é direta.
 
         usuarioRepository.deleteById(matricula);
     }
@@ -77,7 +74,7 @@ public class AdminService {
         novoArbitro.setTipo(TipoUsuario.ARBITRO);
         return usuarioRepository.save(novoArbitro);
     }
-    
+
     public Arbitro atualizarArbitro(String matricula, Arbitro detalhesArbitro) throws Exception {
         Arbitro arbitro = (Arbitro) usuarioRepository.findById(matricula)
                 .filter(u -> u.getTipo() == TipoUsuario.ARBITRO)
@@ -96,11 +93,9 @@ public class AdminService {
         if (!usuarioRepository.existsById(matricula)) {
             throw new Exception("Árbitro com a matrícula " + matricula + " não encontrado.");
         }
-        
-        // Regra de negócio: A verificação se um árbitro apitou uma partida
-        // exigiria uma associação direta na entidade Partida.
-        // Como não existe, a deleção é permitida.
-        
+
+
+
         usuarioRepository.deleteById(matricula);
     }
 }

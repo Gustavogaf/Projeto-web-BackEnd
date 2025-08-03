@@ -54,7 +54,7 @@ public class TorneioController {
     @PostMapping("/{torneioId}/avancar-fase")
     public ResponseEntity<?> avancarFaseDoTorneio(@PathVariable Long torneioId) {
         try {
-            // O serviço agora retorna um objeto de resposta completo
+            // O serviço retorna um objeto de resposta completo
             AvancoFaseResponse response = torneioService.avancarFase(torneioId);
             
             // Retorna a resposta completa com status OK

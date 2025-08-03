@@ -22,7 +22,6 @@ public class Curso {
     @Column(nullable = false)
     private CategoriaCurso categoria;
 
-    // Construtor padrão exigido pelo JPA
     public Curso() {
     }
 

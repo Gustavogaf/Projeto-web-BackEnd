@@ -29,7 +29,7 @@ public class TecnicoService {
     private PartidaRepository partidaRepository;
 
     
-    @Transactional // Garante que todas as operações de banco de dados aconteçam em uma única transação
+    @Transactional 
     public Equipe cadastrarEquipe(String matriculaTecnico, Equipe equipeInfoRequest, List<String> matriculasAtletas) throws Exception {
 
         // 1. Validar o Técnico
@@ -128,7 +128,6 @@ public class TecnicoService {
         return usuarioRepository.save(atleta);
     }
 
-    // REMOVER ATLETA DA EQUIPE
     public void removerAtletaDaEquipe(String matriculaTecnico, String matriculaAtleta) throws Exception {
         // Valida se quem está requisitando é um técnico
         Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)
@@ -156,54 +155,54 @@ public class TecnicoService {
     }
 
     public void deletarAtleta(String matriculaTecnico, String matriculaAtleta) throws Exception {
-        // 1. Valida se quem está requisitando é um técnico
+        // Valida se quem está requisitando é um técnico
         Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)
                 .filter(u -> u.getTipo() == TipoUsuario.TECNICO)
                 .orElseThrow(() -> new Exception("Usuário com a matrícula " + matriculaTecnico + " não é um técnico."));
     
-        // 2. Busca o atleta
+        // Busca o atleta
         Atleta atleta = (Atleta) usuarioRepository.findById(matriculaAtleta)
                 .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
                 .orElseThrow(() -> new Exception("Atleta com a matrícula " + matriculaAtleta + " não encontrado."));
     
-        // 3. Regra de Negócio: Não permitir deleção se o atleta estiver em uma equipe
+        // Regra de Negócio: Não permitir deleção se o atleta estiver em uma equipe
         if (atleta.getEquipe() != null) {
             throw new Exception("Não é possível deletar o atleta, pois ele está associado a uma equipe. Remova-o da equipe primeiro.");
         }
     
-        // 4. Regra de Negócio: Somente o técnico que o cadastrou pode deletar
+        // Regra de Negócio: Somente o técnico que o cadastrou pode deletar
         if (atleta.getCadastradoPor() != null && !atleta.getCadastradoPor().getMatricula().equals(tecnico.getMatricula())) {
             throw new Exception("Você não tem permissão para deletar este atleta, pois não foi você quem o cadastrou.");
         }
     
-        // 5. Deleta o atleta do banco de dados
+        // Deleta o atleta do banco de dados
         usuarioRepository.deleteById(matriculaAtleta);
     }
     
     @Transactional
     public void deletarEquipe(String matriculaTecnico, Long equipeId) throws Exception {
-        // 1. Validar e buscar a equipe
+        // Validar e buscar a equipe
         Equipe equipe = equipeRepository.findById(equipeId)
                 .orElseThrow(() -> new Exception("Equipe com o ID " + equipeId + " não encontrada."));
 
-        // 2. Validar se o requisitante é o técnico da equipe
+        // Validar se o requisitante é o técnico da equipe
         if (!equipe.getTecnico().getMatricula().equals(matriculaTecnico)) {
             throw new Exception("Você não tem permissão para deletar esta equipe.");
         }
     
-        // 3. Regra de Negócio: Não permitir deleção se a equipe tiver partidas
+        // Regra de Negócio: Não permitir deleção se a equipe tiver partidas
         if (partidaRepository.existsByEquipeAOrEquipeB(equipe, equipe)) {
             throw new Exception("Não é possível deletar esta equipe, pois ela já está associada a partidas em um torneio.");
         }
     
-        // 4. Desassociar todos os atletas da equipe
+        // Desassociar todos os atletas da equipe
         for (Atleta atleta : new ArrayList<>(equipe.getAtletas())) {
             atleta.setEquipe(null);
             usuarioRepository.save(atleta);
         }
         equipe.getAtletas().clear();
     
-        // 5. Deletar a equipe
+        // Deletar a equipe
         equipeRepository.delete(equipe);
     }
 }

@@ -8,7 +8,7 @@ public enum FaseTorneio {
     QUARTAS_DE_FINAL("Quartas de Final"),
     SEMIFINAL("Semifinal"),
     FINAL("Final"),
-    CONCLUIDO("Concluído"); // Um estado para indicar o fim
+    CONCLUIDO("Concluído"); 
 
     private final String descricao;
 
@@ -20,7 +20,7 @@ public enum FaseTorneio {
         return descricao;
     }
 
-    // Método inteligente para determinar a próxima fase
+    
     public FaseTorneio proximaFase() {
         switch (this) {
             case FASE_DE_GRUPOS:
