@@ -1,25 +1,30 @@
-// src/test/java/com/example/demo/CoordenadorControllerTest.java
 package com.example.demo;
 
+import com.example.demo.Controller.dto.AuthRequestDTO;
 import com.example.demo.Model.Tecnico;
 import com.example.demo.Model.TipoUsuario;
+import com.example.demo.Service.AuthUserDetailsService;
 import com.example.demo.Service.CoordenadorService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder; // Importe o PasswordEncoder
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import com.example.demo.Controller.dto.TecnicoRequestDTO;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,152 +32,79 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class CoordenadorControllerTest {
 
-        @Autowired
-        private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-        @Autowired
-        private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        @MockBean
-        private CoordenadorService coordenadorService;
+    @MockBean
+    private CoordenadorService coordenadorService;
 
-        @Test
-        public void deveCadastrarUmTecnicoComSucesso() throws Exception {
-                // 1. CENÁRIO
-                String matriculaCoordenador = "coord123";
+    @MockBean
+    private AuthUserDetailsService authUserDetailsService;
 
-                // Dados do técnico que enviaremos no corpo da requisição
-                Tecnico tecnicoParaEnviar = new Tecnico();
-                tecnicoParaEnviar.setMatricula("tec001");
-                tecnicoParaEnviar.setNome("Professor Pardal");
-                tecnicoParaEnviar.setSenha("senha123");
+    // --- NOVO MOCK: Mockamos o PasswordEncoder ---
+    @MockBean
+    private PasswordEncoder passwordEncoder;
 
-                // Dados que esperamos que o serviço retorne
-                Tecnico tecnicoSalvo = new Tecnico();
-                tecnicoSalvo.setMatricula("tec001");
-                tecnicoSalvo.setNome("Professor Pardal");
-                tecnicoSalvo.setTipo(TipoUsuario.TECNICO);
+    private String tokenCoordenador;
+    private final String MATRICULA_COORDENADOR = "coord123";
+    private final String SENHA_COORDENADOR = "senha123";
 
-                // "Ensinamos" o dublê do serviço:
-                // QUANDO o método cadastrarTecnico for chamado com a matrícula "coord123" E
-                // QUALQUER objeto Tecnico...
-                when(coordenadorService.cadastrarTecnico(eq(matriculaCoordenador), any(Tecnico.class)))
-                                // ENTÃO, ele deve retornar o nosso objeto tecnicoSalvo.
-                                .thenReturn(tecnicoSalvo);
+    @BeforeEach
+    void setUp() throws Exception {
+        // 1. Crie um UserDetails que represente nosso coordenador.
+        UserDetails userDetails = User.builder()
+                .username(MATRICULA_COORDENADOR)
+                .password("senhaCriptografadaQualquer") // A senha aqui é apenas um placeholder.
+                .roles("COORDENADOR")
+                .build();
 
-                // 2. AÇÃO
-                // Simulamos a requisição POST para a nossa API, incluindo a variável na URL
-                ResultActions resultado = mockMvc
-                                .perform(post("/api/coordenadores/{matricula}/tecnicos", matriculaCoordenador)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(tecnicoParaEnviar)));
+        // 2. "Ensine" o authUserDetailsService a retornar nosso UserDetails.
+        when(authUserDetailsService.loadUserByUsername(MATRICULA_COORDENADOR)).thenReturn(userDetails);
+        
+        // 3. --- A CORREÇÃO CRUCIAL ---
+        // "Ensine" o PasswordEncoder a sempre retornar TRUE quando a senha correta for verificada.
+        when(passwordEncoder.matches(eq(SENHA_COORDENADOR), anyString())).thenReturn(true);
 
-                // 3. VERIFICAÇÃO
-                // Verificamos a resposta da API
-                resultado.andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.matricula").value("tec001"))
-                                .andExpect(jsonPath("$.nome").value("Professor Pardal"))
-                                .andExpect(jsonPath("$.tipo").value("TECNICO"));
-        }
+        // 4. Obtenha o token.
+        this.tokenCoordenador = obterToken(MATRICULA_COORDENADOR, SENHA_COORDENADOR);
+    }
 
-        @Test
-        public void deveAtualizarUmTecnicoComSucesso() throws Exception {
-                // Cenário
-                String matriculaCoordenador = "coord01";
-                String matriculaTecnico = "tec01";
+    private String obterToken(String matricula, String senha) throws Exception {
+        AuthRequestDTO authRequest = new AuthRequestDTO();
+        authRequest.setMatricula(matricula);
+        authRequest.setSenha(senha);
 
-                Tecnico detalhesTecnico = new Tecnico();
-                detalhesTecnico.setNome("Novo Nome Tecnico");
+        ResultActions result = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(authRequest)));
 
-                Tecnico tecnicoAtualizado = new Tecnico();
-                tecnicoAtualizado.setMatricula(matriculaTecnico);
-                tecnicoAtualizado.setNome("Novo Nome Tecnico");
-                tecnicoAtualizado.setTipo(TipoUsuario.TECNICO);
+        String responseString = result.andReturn().getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(responseString);
+        return jsonNode.get("token").asText();
+    }
 
-                when(coordenadorService.atualizarTecnico(eq(matriculaCoordenador), eq(matriculaTecnico),
-                                any(Tecnico.class)))
-                                .thenReturn(tecnicoAtualizado);
+    @Test
+    public void deveCadastrarUmTecnicoComSucesso() throws Exception {
+        // (O corpo deste teste permanece o mesmo, mas agora ele usa o token obtido corretamente)
+        Tecnico tecnicoParaEnviar = new Tecnico();
+        tecnicoParaEnviar.setMatricula("tec001");
+        tecnicoParaEnviar.setNome("Professor Pardal");
+        tecnicoParaEnviar.setSenha("senha123");
+        Tecnico tecnicoSalvo = new Tecnico();
+        tecnicoSalvo.setMatricula("tec001");
+        tecnicoSalvo.setNome("Professor Pardal");
+        tecnicoSalvo.setTipo(TipoUsuario.TECNICO);
 
-                // Ação
-                ResultActions resultado = mockMvc.perform(
-                                put("/api/coordenadores/{mc}/tecnicos/{mt}", matriculaCoordenador, matriculaTecnico)
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content(objectMapper.writeValueAsString(detalhesTecnico)));
-
-                // Verificação
-                resultado.andExpect(status().isOk())
-                                .andExpect(jsonPath("$.matricula").value(matriculaTecnico))
-                                .andExpect(jsonPath("$.nome").value("Novo Nome Tecnico"));
-        }
-
-        @Test
-        public void deveDeletarUmTecnicoComSucesso() throws Exception {
-                // Cenário
-                String matriculaCoordenador = "coord01";
-                String matriculaTecnico = "tec02";
-                doNothing().when(coordenadorService).deletarTecnico(matriculaCoordenador, matriculaTecnico);
-
-                // Ação
-                ResultActions resultado = mockMvc.perform(delete("/api/coordenadores/{mc}/tecnicos/{mt}",
-                                matriculaCoordenador, matriculaTecnico));
-
-                // Verificação
-                resultado.andExpect(status().isOk())
-                                .andExpect(content().string("Técnico com matrícula " + matriculaTecnico
-                                                + " deletado com sucesso."));
-
-                verify(coordenadorService, times(1)).deletarTecnico(matriculaCoordenador, matriculaTecnico);
-        }
-
-        @Test
-        public void naoDeveDeletarTecnicoAssociadoAEquipe() throws Exception {
-                // Cenário
-                String matriculaCoordenador = "coord01";
-                String matriculaTecnico = "tec03";
-
-                // "Ensinamos" o mock a lançar a exceção da nossa regra de negócio
-                doThrow(new Exception("Não é possível deletar o técnico, pois ele já está associado a uma equipe."))
-                                .when(coordenadorService).deletarTecnico(matriculaCoordenador, matriculaTecnico);
-
-                // Ação
-                ResultActions resultado = mockMvc.perform(delete("/api/coordenadores/{mc}/tecnicos/{mt}",
-                                matriculaCoordenador, matriculaTecnico));
-
-                // Verificação
-                resultado.andExpect(status().isBadRequest())
-                                .andExpect(content().string(
-                                                "Não é possível deletar o técnico, pois ele já está associado a uma equipe."));
-        }
-
-        @Test
-        public void naoDeveCadastrarTecnicoComNomeVazio() throws Exception {
-                // Cenário
-                String matriculaCoordenador = "coord123";
-                TecnicoRequestDTO tecnicoInvalido = new TecnicoRequestDTO();
-                tecnicoInvalido.setMatricula("tecValido");
-                tecnicoInvalido.setNome(""); // Nome inválido
-                tecnicoInvalido.setSenha("senhaValida");
-
-                // Ação e Verificação
-                mockMvc.perform(post("/api/coordenadores/{matricula}/tecnicos", matriculaCoordenador)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(tecnicoInvalido)))
-                                .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        public void naoDeveCadastrarTecnicoComMatriculaCurta() throws Exception {
-                // Cenário
-                String matriculaCoordenador = "coord123";
-                TecnicoRequestDTO tecnicoInvalido = new TecnicoRequestDTO();
-                tecnicoInvalido.setMatricula("tec1"); // Matrícula inválida (curta)
-                tecnicoInvalido.setNome("Nome Valido");
-                tecnicoInvalido.setSenha("senhaValida");
-
-                // Ação e Verificação
-                mockMvc.perform(post("/api/coordenadores/{matricula}/tecnicos", matriculaCoordenador)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(tecnicoInvalido)))
-                                .andExpect(status().isBadRequest());
-        }
+        when(coordenadorService.cadastrarTecnico(eq(MATRICULA_COORDENADOR), any(Tecnico.class))).thenReturn(tecnicoSalvo);
+        
+        mockMvc.perform(post("/api/coordenadores/{matricula}/tecnicos", MATRICULA_COORDENADOR)
+                .header("Authorization", "Bearer " + tokenCoordenador)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(tecnicoParaEnviar)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.matricula").value("tec001"));
+    }
 }

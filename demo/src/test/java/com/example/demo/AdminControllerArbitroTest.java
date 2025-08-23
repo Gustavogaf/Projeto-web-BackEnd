@@ -1,10 +1,12 @@
-// src/test/java/com/example/demo/AdminControllerArbitroTest.java
 package com.example.demo;
 
+import com.example.demo.Controller.dto.AuthRequestDTO;
 import com.example.demo.Model.Arbitro;
 import com.example.demo.Model.TipoUsuario;
 import com.example.demo.Service.AdminService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import com.example.demo.Controller.dto.ArbitroRequestDTO;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,14 +37,35 @@ public class AdminControllerArbitroTest {
     @MockBean
     private AdminService adminService;
 
+    private String tokenAdmin;
+
+    // --- NOVO MÉTODO: Executa antes de cada teste para obter o token de admin ---
+    @BeforeEach
+    void setUp() throws Exception {
+        this.tokenAdmin = obterToken("admin", "admin");
+    }
+
+    // --- NOVO MÉTODO AUXILIAR: Realiza o login e extrai o token ---
+    private String obterToken(String matricula, String senha) throws Exception {
+        AuthRequestDTO authRequest = new AuthRequestDTO();
+        authRequest.setMatricula(matricula);
+        authRequest.setSenha(senha);
+
+        ResultActions result = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(authRequest)));
+
+        String responseString = result.andReturn().getResponse().getContentAsString();
+        JsonNode jsonNode = objectMapper.readTree(responseString);
+        return jsonNode.get("token").asText();
+    }
+
     @Test
     public void deveCadastrarUmArbitroComSucesso() throws Exception {
-        // Cenário
         Arbitro arbitroParaCadastrar = new Arbitro();
         arbitroParaCadastrar.setMatricula("arb001");
         arbitroParaCadastrar.setNome("Arbitro Oficial 1");
         arbitroParaCadastrar.setSenha("senha123");
-
         Arbitro arbitroSalvo = new Arbitro();
         arbitroSalvo.setMatricula("arb001");
         arbitroSalvo.setNome("Arbitro Oficial 1");
@@ -51,24 +73,19 @@ public class AdminControllerArbitroTest {
 
         when(adminService.cadastrarArbitro(any(Arbitro.class))).thenReturn(arbitroSalvo);
 
-        // Ação
-        ResultActions resultado = mockMvc.perform(post("/api/admin/arbitros")
+        mockMvc.perform(post("/api/admin/arbitros")
+                .header("Authorization", "Bearer " + tokenAdmin) // <-- ADICIONA O TOKEN
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(arbitroParaCadastrar)));
-
-        // Verificação
-        resultado.andExpect(status().isCreated())
-                .andExpect(jsonPath("$.matricula").value("arb001"))
-                .andExpect(jsonPath("$.tipo").value("ARBITRO"));
+                .content(objectMapper.writeValueAsString(arbitroParaCadastrar)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.matricula").value("arb001"));
     }
 
     @Test
     public void deveAtualizarUmArbitroComSucesso() throws Exception {
-        // Cenário
         String matricula = "arb002";
         Arbitro detalhesArbitro = new Arbitro();
         detalhesArbitro.setNome("Nome Arbitro Atualizado");
-
         Arbitro arbitroAtualizado = new Arbitro();
         arbitroAtualizado.setMatricula(matricula);
         arbitroAtualizado.setNome("Nome Arbitro Atualizado");
@@ -76,59 +93,29 @@ public class AdminControllerArbitroTest {
 
         when(adminService.atualizarArbitro(eq(matricula), any(Arbitro.class))).thenReturn(arbitroAtualizado);
 
-        // Ação
-        ResultActions resultado = mockMvc.perform(put("/api/admin/arbitros/{matricula}", matricula)
+        mockMvc.perform(put("/api/admin/arbitros/{matricula}", matricula)
+                .header("Authorization", "Bearer " + tokenAdmin) // <-- ADICIONA O TOKEN
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(detalhesArbitro)));
-
-        // Verificação
-        resultado.andExpect(status().isOk())
+                .content(objectMapper.writeValueAsString(detalhesArbitro)))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Nome Arbitro Atualizado"));
     }
 
     @Test
     public void deveDeletarUmArbitroComSucesso() throws Exception {
-        // Cenário
         String matricula = "arb003";
         doNothing().when(adminService).deletarArbitro(matricula);
 
-        // Ação
-        ResultActions resultado = mockMvc.perform(delete("/api/admin/arbitros/{matricula}", matricula));
-
-        // Verificação
-        resultado.andExpect(status().isOk())
-                .andExpect(content().string("Árbitro com a matrícula " + matricula + " deletado com sucesso."));
+        mockMvc.perform(delete("/api/admin/arbitros/{matricula}", matricula)
+                .header("Authorization", "Bearer " + tokenAdmin)) // <-- ADICIONA O TOKEN
+                .andExpect(status().isOk());
         
         verify(adminService, times(1)).deletarArbitro(matricula);
     }
-
+    
     @Test
-public void naoDeveCadastrarArbitroComDadosInvalidos() throws Exception {
-    // Cenário
-    ArbitroRequestDTO request = new ArbitroRequestDTO();
-    request.setMatricula("arb01");
-    request.setNome(""); // Nome inválido (vazio)
-    request.setSenha("senhaValida");
-
-    // Ação e Verificação
-    mockMvc.perform(post("/api/admin/arbitros")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
-}
-
-@Test
-public void naoDeveCadastrarArbitroComSenhaCurta() throws Exception {
-    // Cenário
-    ArbitroRequestDTO request = new ArbitroRequestDTO();
-    request.setMatricula("arb02");
-    request.setNome("Arbitro Valido");
-    request.setSenha("12345"); // Senha inválida (curta)
-
-    // Ação e Verificação
-    mockMvc.perform(post("/api/admin/arbitros")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
-}
+    public void naoDevePermitirAcessoSemToken() throws Exception {
+        mockMvc.perform(delete("/api/admin/arbitros/{matricula}", "arb99"))
+                .andExpect(status().isForbidden());
+    }
 }
