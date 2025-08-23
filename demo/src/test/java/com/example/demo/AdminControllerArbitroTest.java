@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import com.example.demo.Controller.dto.ArbitroRequestDTO;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -100,4 +101,34 @@ public class AdminControllerArbitroTest {
         
         verify(adminService, times(1)).deletarArbitro(matricula);
     }
+
+    @Test
+public void naoDeveCadastrarArbitroComDadosInvalidos() throws Exception {
+    // Cenário
+    ArbitroRequestDTO request = new ArbitroRequestDTO();
+    request.setMatricula("arb01");
+    request.setNome(""); // Nome inválido (vazio)
+    request.setSenha("senhaValida");
+
+    // Ação e Verificação
+    mockMvc.perform(post("/api/admin/arbitros")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+}
+
+@Test
+public void naoDeveCadastrarArbitroComSenhaCurta() throws Exception {
+    // Cenário
+    ArbitroRequestDTO request = new ArbitroRequestDTO();
+    request.setMatricula("arb02");
+    request.setNome("Arbitro Valido");
+    request.setSenha("12345"); // Senha inválida (curta)
+
+    // Ação e Verificação
+    mockMvc.perform(post("/api/admin/arbitros")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+}
 }

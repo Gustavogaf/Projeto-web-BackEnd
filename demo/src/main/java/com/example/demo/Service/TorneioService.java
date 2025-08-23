@@ -11,8 +11,6 @@ import com.example.demo.Controller.dto.AvancoFaseResponse;
 import com.example.demo.Controller.dto.EquipeResponseDTO;
 import com.example.demo.Controller.dto.PartidaResponseDTO;
 
-
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,8 +42,9 @@ public class TorneioService {
 
         Torneio torneio = torneioRepository.findById(torneioId)
                 .orElseThrow(() -> new Exception("Torneio não encontrado."));
-        
-        List<Partida> partidasConcluidas = partidaRepository.findByTorneioIdAndStatusNot(torneioId, StatusPartida.AGENDADA);
+
+        List<Partida> partidasConcluidas = partidaRepository.findByTorneioIdAndStatusNot(torneioId,
+                StatusPartida.AGENDADA);
 
         if (partidasConcluidas.isEmpty()) {
             throw new Exception("Nenhuma partida foi concluída ainda.");
@@ -62,24 +61,25 @@ public class TorneioService {
             vencedores = determinarClassificadosDosGrupos(torneio);
         } else {
             vencedores = partidasConcluidas.stream()
-                .filter(p -> p.getFase() == ultimaFaseJogada)
-                .map(p -> p.getPlacarEquipeA() > p.getPlacarEquipeB() ? p.getEquipeA() : p.getEquipeB())
-                .collect(Collectors.toList());
+                    .filter(p -> p.getFase() == ultimaFaseJogada)
+                    .map(p -> p.getPlacarEquipeA() > p.getPlacarEquipeB() ? p.getEquipeA() : p.getEquipeB())
+                    .collect(Collectors.toList());
         }
 
         // 4. Verificar se há um campeão
         if (ultimaFaseJogada == FaseTorneio.FINAL) {
-             Equipe equipeCampeao = vencedores.get(0);
-             System.out.println("Torneio finalizado! Campeão: " + equipeCampeao.getNome());
-             // Retorna o DTO de resposta com os dados do campeão
-             return new AvancoFaseResponse("Torneio finalizado!", new EquipeResponseDTO(equipeCampeao));
+            Equipe equipeCampeao = vencedores.get(0);
+            System.out.println("Torneio finalizado! Campeão: " + equipeCampeao.getNome());
+            // Retorna o DTO de resposta com os dados do campeão
+            return new AvancoFaseResponse("Torneio finalizado!", new EquipeResponseDTO(equipeCampeao));
         }
         // 5. Gerar as partidas da próxima fase
         FaseTorneio proximaFase = calcularProximaFase(vencedores.size());
-        
+
         List<Partida> novasPartidas = new ArrayList<>();
         Collections.shuffle(vencedores);
-        LocalDateTime proximaData = partidasConcluidas.stream().max(Comparator.comparing(Partida::getDataHora)).get().getDataHora().plusDays(7);
+        LocalDateTime proximaData = partidasConcluidas.stream().max(Comparator.comparing(Partida::getDataHora)).get()
+                .getDataHora().plusDays(7);
 
         for (int i = 0; i < vencedores.size() / 2; i++) {
             Partida novaPartida = new Partida();
@@ -106,21 +106,28 @@ public class TorneioService {
         List<Equipe> classificados = new ArrayList<>();
         for (Grupo grupo : torneio.getGrupos()) {
             grupo.getEquipes().sort((e1, e2) -> Integer.compare(e2.getPontos(), e1.getPontos()));
-            if (grupo.getEquipes().size() >= 1) classificados.add(grupo.getEquipes().get(0));
-            if (grupo.getEquipes().size() >= 2) classificados.add(grupo.getEquipes().get(1));
+            if (grupo.getEquipes().size() >= 1)
+                classificados.add(grupo.getEquipes().get(0));
+            if (grupo.getEquipes().size() >= 2)
+                classificados.add(grupo.getEquipes().get(1));
         }
         return classificados;
     }
-    
+
     private FaseTorneio calcularProximaFase(int numeroDeEquipes) {
-        if (numeroDeEquipes <= 2) return FaseTorneio.FINAL;
-        if (numeroDeEquipes <= 4) return FaseTorneio.SEMIFINAL;
-        if (numeroDeEquipes <= 8) return FaseTorneio.QUARTAS_DE_FINAL;
-        if (numeroDeEquipes <= 16) return FaseTorneio.OITAVAS_DE_FINAL;
-        if (numeroDeEquipes <= 32) return FaseTorneio.DEZESSEIS_AVOS;
+        if (numeroDeEquipes <= 2)
+            return FaseTorneio.FINAL;
+        if (numeroDeEquipes <= 4)
+            return FaseTorneio.SEMIFINAL;
+        if (numeroDeEquipes <= 8)
+            return FaseTorneio.QUARTAS_DE_FINAL;
+        if (numeroDeEquipes <= 16)
+            return FaseTorneio.OITAVAS_DE_FINAL;
+        if (numeroDeEquipes <= 32)
+            return FaseTorneio.DEZESSEIS_AVOS;
         return FaseTorneio.TRINTA_E_DOIS_AVOS;
     }
-    
+
     @Transactional
     public Torneio iniciarFaseDeGrupos(Esporte esporte, CategoriaCurso categoria) throws Exception {
         List<Equipe> equipesInscritas = equipeRepository.findByEsporteAndCurso_Categoria(esporte, categoria);
@@ -145,21 +152,25 @@ public class TorneioService {
         Collections.shuffle(equipes);
         int totalEquipes = equipes.size();
 
-        if (totalEquipes < 3) return;
+        if (totalEquipes < 3)
+            return;
 
         List<Integer> distribuicao = new ArrayList<>();
 
         if (totalEquipes % 3 == 0) {
             int numGruposDe3 = totalEquipes / 3;
-            for (int i = 0; i < numGruposDe3; i++) distribuicao.add(3);
+            for (int i = 0; i < numGruposDe3; i++)
+                distribuicao.add(3);
         } else if (totalEquipes % 3 == 1) {
             distribuicao.add(4);
             int equipesRestantes = totalEquipes - 4;
-            for (int i = 0; i < equipesRestantes / 3; i++) distribuicao.add(3);
+            for (int i = 0; i < equipesRestantes / 3; i++)
+                distribuicao.add(3);
         } else {
             distribuicao.add(5);
             int equipesRestantes = totalEquipes - 5;
-            for (int i = 0; i < equipesRestantes / 3; i++) distribuicao.add(3);
+            for (int i = 0; i < equipesRestantes / 3; i++)
+                distribuicao.add(3);
         }
 
         for (int i = 0; i < distribuicao.size(); i++) {
@@ -196,11 +207,15 @@ public class TorneioService {
                     partida.setTorneio(torneio);
                     partida.setFase(FaseTorneio.FASE_DE_GRUPOS);
 
-                    LocalDateTime horarioEquipeA = ultimoHorarioPorEquipe.getOrDefault(partida.getEquipeA().getId(), proximoHorarioDisponivel);
-                    LocalDateTime horarioEquipeB = ultimoHorarioPorEquipe.getOrDefault(partida.getEquipeB().getId(), proximoHorarioDisponivel);
-                    LocalDateTime horarioDaPartida = horarioEquipeA.isAfter(horarioEquipeB) ? horarioEquipeA : horarioEquipeB;
-                    if (horarioDaPartida.isBefore(proximoHorarioDisponivel)) horarioDaPartida = proximoHorarioDisponivel;
-                    
+                    LocalDateTime horarioEquipeA = ultimoHorarioPorEquipe.getOrDefault(partida.getEquipeA().getId(),
+                            proximoHorarioDisponivel);
+                    LocalDateTime horarioEquipeB = ultimoHorarioPorEquipe.getOrDefault(partida.getEquipeB().getId(),
+                            proximoHorarioDisponivel);
+                    LocalDateTime horarioDaPartida = horarioEquipeA.isAfter(horarioEquipeB) ? horarioEquipeA
+                            : horarioEquipeB;
+                    if (horarioDaPartida.isBefore(proximoHorarioDisponivel))
+                        horarioDaPartida = proximoHorarioDisponivel;
+
                     partida.setDataHora(horarioDaPartida);
                     partidasParaSalvar.add(partida);
 
@@ -213,10 +228,13 @@ public class TorneioService {
         }
         partidaRepository.saveAll(partidasParaSalvar);
     }
-    
-
 
     public List<Torneio> listarTodos() {
         return torneioRepository.findAll();
+    }
+
+    public Torneio buscarPorId(Long id) throws Exception {
+        return torneioRepository.findById(id)
+                .orElseThrow(() -> new Exception("Torneio com o ID " + id + " não encontrado."));
     }
 }

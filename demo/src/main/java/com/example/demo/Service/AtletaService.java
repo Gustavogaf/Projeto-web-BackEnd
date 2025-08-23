@@ -22,4 +22,10 @@ public class AtletaService {
                 .map(usuario -> (Atleta) usuario)
                 .collect(Collectors.toList());
     }
+
+    public Atleta buscarPorMatricula(String matricula) throws Exception {
+        return (Atleta) usuarioRepository.findById(matricula)
+                .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
+                .orElseThrow(() -> new Exception("Atleta com a matrícula " + matricula + " não encontrado."));
+    }
 }

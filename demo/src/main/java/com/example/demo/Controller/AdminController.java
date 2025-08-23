@@ -1,10 +1,14 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Controller.dto.ArbitroRequestDTO;
+import com.example.demo.Controller.dto.CoordenadorRequestDTO;
 import com.example.demo.Controller.dto.UsuarioResponseDTO;
 import com.example.demo.Model.Coordenador;
 import com.example.demo.Model.Arbitro;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Service.AdminService;
+
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,8 +26,14 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping("/coordenadores")
-    public ResponseEntity<?> cadastrarCoordenador(@RequestBody Coordenador coordenador) {
+    public ResponseEntity<?> cadastrarCoordenador(@Valid @RequestBody CoordenadorRequestDTO coordenadorDTO) {
         try {
+            // Convertemos o DTO para a entidade
+            Coordenador coordenador = new Coordenador();
+            coordenador.setMatricula(coordenadorDTO.getMatricula());
+            coordenador.setNome(coordenadorDTO.getNome());
+            coordenador.setSenha(coordenadorDTO.getSenha());
+            
             Coordenador novoCoordenador = adminService.cadastrarCoordenador(coordenador);
             return new ResponseEntity<>(new UsuarioResponseDTO(novoCoordenador), HttpStatus.CREATED);
         } catch (Exception e) {
@@ -38,6 +48,16 @@ public class AdminController {
                 .map(UsuarioResponseDTO::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/coordenadores/{matricula}")
+    public ResponseEntity<?> buscarCoordenadorPorMatricula(@PathVariable String matricula) {
+        try {
+            Coordenador coordenador = adminService.buscarCoordenadorPorMatricula(matricula);
+            return ResponseEntity.ok(new UsuarioResponseDTO(coordenador));
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/coordenadores/{matricula}")
@@ -62,12 +82,28 @@ public class AdminController {
     }
 
     @PostMapping("/arbitros")
-    public ResponseEntity<?> cadastrarArbitro(@RequestBody Arbitro arbitro) {
+    public ResponseEntity<?> cadastrarArbitro(@Valid @RequestBody ArbitroRequestDTO arbitroDTO) {
         try {
+            // Convertemos o DTO para a entidade
+            Arbitro arbitro = new Arbitro();
+            arbitro.setMatricula(arbitroDTO.getMatricula());
+            arbitro.setNome(arbitroDTO.getNome());
+            arbitro.setSenha(arbitroDTO.getSenha());
+
             Arbitro novoArbitro = adminService.cadastrarArbitro(arbitro);
             return new ResponseEntity<>(new UsuarioResponseDTO(novoArbitro), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/arbitros/{matricula}")
+    public ResponseEntity<?> buscarArbitroPorMatricula(@PathVariable String matricula) {
+        try {
+            Arbitro arbitro = adminService.buscarArbitroPorMatricula(matricula);
+            return ResponseEntity.ok(new UsuarioResponseDTO(arbitro));
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 

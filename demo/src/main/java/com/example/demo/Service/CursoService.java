@@ -4,6 +4,7 @@ import com.example.demo.Model.Curso;
 import com.example.demo.Repository.CursoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 import java.util.List;
 
@@ -17,10 +18,13 @@ public class CursoService {
         return cursoRepository.findAll();
     }
 
+    public Curso buscarPorId(Long id) throws Exception {
+        return cursoRepository.findById(id)
+                .orElseThrow(() -> new Exception("Curso com o ID " + id + " não encontrado."));
+    }
+
     public Curso criarCurso(Curso curso) throws Exception {
-        if (curso.getNome() == null || curso.getNome().isBlank()) {
-            throw new Exception("O nome do curso não pode ser vazio.");
-        }
+        // Valida se já existe um curso com o mesmo nome
         if (cursoRepository.existsByNome(curso.getNome())) {
             throw new Exception("Já existe um curso cadastrado com o nome: " + curso.getNome());
         }

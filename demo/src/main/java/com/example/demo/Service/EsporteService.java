@@ -19,10 +19,7 @@ public class EsporteService {
         if (esporteRepository.existsByNome(esporte.getNome())) {
             throw new Exception("Já existe um esporte cadastrado com o nome: " + esporte.getNome());
         }
-        // Regra de Negócio: Quantidade mínima e máxima de atletas.
-        if (esporte.getMinAtletas() <= 0 || esporte.getMaxAtletas() <= 0) {
-             throw new Exception("A quantidade mínima e máxima de atletas deve ser maior que zero.");
-        }
+        // Regra de Negócio: minAtletas não pode ser maior que maxAtletas
         if (esporte.getMinAtletas() > esporte.getMaxAtletas()) {
             throw new Exception("A quantidade mínima de atletas não pode ser maior que a quantidade máxima.");
         }

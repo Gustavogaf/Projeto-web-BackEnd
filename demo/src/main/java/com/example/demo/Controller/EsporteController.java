@@ -3,6 +3,8 @@ package com.example.demo.Controller;
 import com.example.demo.Controller.dto.EsporteResponseDTO;
 import com.example.demo.Model.Esporte;
 import com.example.demo.Service.EsporteService;
+import com.example.demo.Controller.dto.EsporteRequestDTO;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,10 +21,11 @@ public class EsporteController {
     private EsporteService esporteService;
 
     @PostMapping
-    public ResponseEntity<?> criarEsporte(@RequestBody Esporte esporte) {
+    public ResponseEntity<?> criarEsporte(@Valid @RequestBody EsporteRequestDTO esporteDTO) {
         try {
+            // Convertemos o DTO para a entidade
+            Esporte esporte = new Esporte(esporteDTO.getNome(), esporteDTO.getMinAtletas(), esporteDTO.getMaxAtletas());
             Esporte novoEsporte = esporteService.criarEsporte(esporte);
-            // Retorna o novo esporte criado e o status 201 Created
             return new ResponseEntity<>(new EsporteResponseDTO(novoEsporte), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

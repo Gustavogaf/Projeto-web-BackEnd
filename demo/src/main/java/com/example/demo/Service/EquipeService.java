@@ -16,4 +16,9 @@ public class EquipeService {
     public List<Equipe> listarTodas() {
         return equipeRepository.findAll();
     }
+
+    public Equipe buscarPorId(Long id) throws Exception {
+        return equipeRepository.findById(id)
+                .orElseThrow(() -> new Exception("Equipe com o ID " + id + " não encontrada."));
+    }
 }

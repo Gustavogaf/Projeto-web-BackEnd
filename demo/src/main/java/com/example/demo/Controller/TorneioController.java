@@ -26,7 +26,6 @@ import com.example.demo.Controller.dto.PartidaResponseDTO;
 import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Controller.dto.AvancoFaseResponse;
 
-
 @RestController
 @RequestMapping("/api/torneios")
 public class TorneioController {
@@ -56,7 +55,7 @@ public class TorneioController {
         try {
             // O serviço retorna um objeto de resposta completo
             AvancoFaseResponse response = torneioService.avancarFase(torneioId);
-            
+
             // Retorna a resposta completa com status OK
             return new ResponseEntity<>(response, HttpStatus.OK);
 
@@ -72,6 +71,16 @@ public class TorneioController {
                 .map(TorneioResponseDTO::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarTorneioPorId(@PathVariable Long id) {
+        try {
+            Torneio torneio = torneioService.buscarPorId(id);
+            return ResponseEntity.ok(new TorneioResponseDTO(torneio));
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{torneioId}/partidas")

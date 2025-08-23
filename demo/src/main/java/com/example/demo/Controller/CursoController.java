@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import com.example.demo.Controller.dto.CursoRequestDTO;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,14 +36,26 @@ public class CursoController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
-    public ResponseEntity<?> criarCurso(@RequestBody Curso curso) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarCursoPorId(@PathVariable Long id) {
         try {
+            Curso curso = cursoService.buscarPorId(id);
+            // Retorna o DTO do curso encontrado com status 200 OK
+            return ResponseEntity.ok(new CursoResponseDTO(curso));
+        } catch (Exception e) {
+            // Retorna a mensagem de erro com status 404 Not Found
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<?> criarCurso(@Valid @RequestBody CursoRequestDTO cursoDTO) {
+        try {
+            // Convertemos o DTO para a entidade antes de passar para o serviço
+            Curso curso = new Curso(cursoDTO.getNome(), cursoDTO.getCategoria());
             Curso novoCurso = cursoService.criarCurso(curso);
-            // Retorna o DTO do novo curso e o status 201 Created
             return new ResponseEntity<>(new CursoResponseDTO(novoCurso), HttpStatus.CREATED);
         } catch (Exception e) {
-            // Retorna a mensagem de erro com o status 400 Bad Request
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
