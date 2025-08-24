@@ -13,6 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.Controller.dto.AtletaRequestDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,11 +66,10 @@ public class TecnicoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponseDTO>> listarTecnicos() {
-        List<Usuario> tecnicos = tecnicoService.listarTodos();
-        List<UsuarioResponseDTO> response = tecnicos.stream()
-                .map(UsuarioResponseDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<UsuarioResponseDTO>> listarTecnicos(
+            @PageableDefault(size = 10, sort = { "nome" }) Pageable paginacao) {
+        Page<Usuario> tecnicos = tecnicoService.listarTodos(paginacao);
+        Page<UsuarioResponseDTO> response = tecnicos.map(UsuarioResponseDTO::new);
         return ResponseEntity.ok(response);
     }
 

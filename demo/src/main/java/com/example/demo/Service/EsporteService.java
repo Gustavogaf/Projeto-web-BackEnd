@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class EsporteService {
@@ -27,9 +29,9 @@ public class EsporteService {
         return esporteRepository.save(esporte);
     }
 
-    public List<Esporte> listarTodos() {
-        return esporteRepository.findAll();
-    }
+    public Page<Esporte> listarTodos(Pageable paginacao) {
+    return esporteRepository.findAll(paginacao);
+}
 
     public Esporte atualizarEsporte(Long id, Esporte esporteDetails) throws Exception {
         Esporte esporte = esporteRepository.findById(id)

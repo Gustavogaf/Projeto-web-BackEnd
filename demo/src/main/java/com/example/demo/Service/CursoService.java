@@ -5,6 +5,8 @@ import com.example.demo.Repository.CursoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -14,8 +16,8 @@ public class CursoService {
     @Autowired
     private CursoRepository cursoRepository;
 
-    public List<Curso> listarTodos() {
-        return cursoRepository.findAll();
+    public Page<Curso> listarTodos(Pageable paginacao) {
+        return cursoRepository.findAll(paginacao);
     }
 
     public Curso buscarPorId(Long id) throws Exception {

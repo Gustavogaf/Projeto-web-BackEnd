@@ -5,6 +5,9 @@ import com.example.demo.Model.Esporte;
 import com.example.demo.Service.EsporteService;
 import com.example.demo.Controller.dto.EsporteRequestDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 
@@ -33,16 +36,10 @@ public class EsporteController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EsporteResponseDTO>> listarEsportes() {
-        // 1. Busca todos os esportes do serviço
-        List<Esporte> esportes = esporteService.listarTodos();
-
-        // 2. Converte a lista de entidades para uma lista de DTOs
-        List<EsporteResponseDTO> response = esportes.stream()
-                .map(EsporteResponseDTO::new)
-                .toList();
-
-        // 3. Retorna a lista de DTOs com o status 200 OK
+    public ResponseEntity<Page<EsporteResponseDTO>> listarEsportes(
+            @PageableDefault(size = 10, sort = { "nome" }) Pageable paginacao) {
+        Page<Esporte> esportes = esporteService.listarTodos(paginacao);
+        Page<EsporteResponseDTO> response = esportes.map(EsporteResponseDTO::new);
         return ResponseEntity.ok(response);
     }
 

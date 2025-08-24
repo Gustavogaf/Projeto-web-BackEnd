@@ -2,7 +2,7 @@
 
 ## 1. Objetivo do Projeto
 
-Este projeto consiste em um sistema Back-end, desenvolvido em Spring Boot, para gerenciar os jogos interclasse do Instituto Federal de Sergipe (IFS). O sistema cobre desde o cadastro de cursos, esportes, equipes e usuários, até a geração completa de um torneio, com lógicas avançadas para sorteio de grupos, chaveamento justo do mata-mata (1º vs 2º), tratamento de "byes" para ajuste de chave e agendamento de partidas sem conflitos de horário.
+Este projeto consiste em um sistema Back-end, desenvolvido em Spring Boot, para gerenciar os jogos interclasse do Instituto Federal de Sergipe (IFS). O sistema cobre desde o cadastro de cursos, esportes, equipes e usuários, até a geração completa de um torneio, com lógicas avançadas para sorteio de grupos e agendamento de partidas. A API é protegida, utilizando autenticação baseada em JWT e autorização por papéis, e implementa paginação para consultas eficientes.
 
 Este projeto foi desenvolvido como requisito para a disciplina de Web 1 do curso de Bacharelado em Sistemas de Informação.
 
@@ -12,11 +12,13 @@ Este projeto foi desenvolvido como requisito para a disciplina de Web 1 do curso
 * **Spring Boot 3**: Framework principal para construção da aplicação.
     * **Spring Web**: Para criação dos endpoints da API RESTful.
     * **Spring Data JPA**: Para persistência de dados e comunicação com o banco.
+    * **Spring Security**: Para autenticação e autorização baseada em JWT.
     * **Spring Test**: Para a suíte de testes (unitários, integração e API).
 * **Hibernate**: Implementação do JPA para mapeamento objeto-relacional (ORM).
 * **Maven**: Ferramenta de gerenciamento de dependências e build do projeto.
-* **H2 Database**: Banco de dados em memória utilizado para os testes de integração.
-* **SQL Server**: Sistema de Gerenciamento de Banco de Dados (SGBD) utilizado em desenvolvimento.
+* **JWT (JSON Web Token)**: Para a geração e validação de tokens de autenticação.
+* **H2 Database**: Banco de dados em memória utilizado para os testes.
+* **SQL Server**: SGBD utilizado em desenvolvimento.
 * **JUnit 5, Mockito & AssertJ**: Bibliotecas para a escrita e execução dos testes.
 
 ## 3. Como Executar o Projeto
@@ -51,13 +53,51 @@ Este projeto foi desenvolvido como requisito para a disciplina de Web 1 do curso
 
 A aplicação estará disponível em `http://localhost:8080`.
 
-## 4. Documentação da API (Endpoints)
+## 4. Segurança e Autenticação
 
-A seguir estão documentados todos os endpoints disponíveis na API.
+A maioria dos endpoints desta API é protegida e requer um token de autenticação para ser acessada. O sistema utiliza **JSON Web Tokens (JWT)**.
+
+### `POST /api/auth/login`
+* **Descrição**: Autentica um usuário (Admin, Coordenador, Técnico, Árbitro ou Atleta) e retorna um token JWT. Este é um dos poucos endpoints públicos.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "matricula": "admin",
+      "senha": "admin"
+    }
+    ```
+* **Resposta de Sucesso (200 OK)**:
+    ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZWMwMDEiLCJpYXQiOjE3MjQ0NDg..."
+    }
+    ```
+
+### Uso do Token
+
+Após obter o token, você deve incluí-lo em todas as chamadas para endpoints protegidos, utilizando o cabeçalho `Authorization` com o prefixo `Bearer`.
+
+**Exemplo de Cabeçalho:**
+
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZWMwMDEiLCJpYXQiOjE3MjQ0NDg...
+
+Qualquer tentativa de acessar um endpoint protegido sem um token válido ou sem a permissão (`role`) necessária resultará em uma resposta `403 Forbidden`.
+
+## 5. Documentação da API (Endpoints)
+
+### Paginação
+
+Todos os endpoints `GET` que retornam listas de recursos são paginados. Você pode controlar a paginação usando os seguintes parâmetros na URL:
+* `page`: O número da página que você deseja (começando em 0).
+* `size`: O número de itens por página.
+* `sort`: O campo pelo qual você deseja ordenar, seguido de `,asc` ou `,desc`.
+
+**Exemplo:** `GET /api/cursos?page=0&size=5&sort=nome,desc`
 
 ---
 
-### 4.1. Gestão de Administradores (`/api/admin`)
+### 5.1. Gestão de Administradores (`/api/admin`)
+* **Permissão Requerida**: `ROLE_ADMIN`
 
 #### `POST /api/admin/coordenadores`
 * **Descrição**: Cadastra um novo coordenador.
@@ -66,29 +106,28 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     {
       "matricula": "coordSI01",
       "nome": "Prof. Coordenador de SI",
-      "senha": "senhaSegura"
+      "senha": "senhaSegura123"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do coordenador cadastrado.
 
 #### `GET /api/admin/coordenadores`
-* **Descrição**: Lista todos os coordenadores.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
+* **Descrição**: Lista todos os coordenadores de forma paginada.
+
+#### `GET /api/admin/coordenadores/{matricula}`
+* **Descrição**: Busca um coordenador específico pela matrícula.
 
 #### `PUT /api/admin/coordenadores/{matricula}`
-* **Descrição**: Atualiza um coordenador.
+* **Descrição**: Atualiza os dados de um coordenador.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
       "nome": "Nome Coordenador Atualizado",
-      "senha": "novaSenha123"
+      "senha": "novaSenhaSegura456"
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto do coordenador atualizado.
 
 #### `DELETE /api/admin/coordenadores/{matricula}`
 * **Descrição**: Deleta um coordenador.
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 #### `POST /api/admin/arbitros`
 * **Descrição**: Cadastra um novo árbitro.
@@ -97,29 +136,29 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     {
       "matricula": "arb001",
       "nome": "Árbitro Oficial",
-      "senha": "senhaArbitro"
+      "senha": "senhaArbitro123"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do árbitro cadastrado.
+#### `GET /api/admin/arbitros/{matricula}`
+* **Descrição**: Busca um árbitro específico pela matrícula.
 
 #### `PUT /api/admin/arbitros/{matricula}`
-* **Descrição**: Atualiza um árbitro.
+* **Descrição**: Atualiza os dados de um árbitro.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
-        "nome": "Juiz Atualizado",
-        "senha": "outraSenha"
+      "nome": "Juiz Atualizado",
+      "senha": "outraSenha456"
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto do árbitro atualizado.
 
 #### `DELETE /api/admin/arbitros/{matricula}`
 * **Descrição**: Deleta um árbitro.
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
-### 4.2. Gestão de Cursos (`/api/cursos`)
+### 5.2. Gestão de Cursos (`/api/cursos`)
+* **Permissão Requerida**: `POST`, `PUT`, `DELETE` exigem autenticação. `GET` é público.
 
 #### `POST /api/cursos`
 * **Descrição**: Cadastra um novo curso.
@@ -130,30 +169,28 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "categoria": "SUPERIOR"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do curso cadastrado.
 
 #### `GET /api/cursos`
-* **Descrição**: Lista todos os cursos.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `CursoResponseDTO`.
+* **Descrição**: Lista todos os cursos de forma paginada.
+
+#### `GET /api/cursos/{id}`
+* **Descrição**: Busca um curso específico pelo ID.
 
 #### `PUT /api/cursos/{id}`
 * **Descrição**: Atualiza um curso.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
-      "nome": "Ciência da Computação",
-      "categoria": "SUPERIOR"
+      "nome": "Ciência da Computação"
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto do curso atualizado.
-
 #### `DELETE /api/cursos/{id}`
 * **Descrição**: Deleta um curso.
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
-### 4.3. Gestão de Esportes (`/api/esportes`)
+### 5.3. Gestão de Esportes (`/api/esportes`)
+* **Permissão Requerida**: `POST`, `PUT`, `DELETE` exigem autenticação. `GET` é público.
 
 #### `POST /api/esportes`
 * **Descrição**: Cadastra um novo esporte.
@@ -165,11 +202,12 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "maxAtletas": 1
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do esporte cadastrado.
 
 #### `GET /api/esportes`
-* **Descrição**: Lista todos os esportes.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EsporteResponseDTO`.
+* **Descrição**: Lista todos os esportes de forma paginada.
+
+#### `GET /api/esportes/{id}`
+* **Descrição**: Busca um esporte específico pelo ID.
 
 #### `PUT /api/esportes/{id}`
 * **Descrição**: Atualiza um esporte.
@@ -180,15 +218,14 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "maxAtletas": 4
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto do esporte atualizado.
 
 #### `DELETE /api/esportes/{id}`
 * **Descrição**: Deleta um esporte.
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 ---
 
-### 4.4. Gestão de Técnicos
+### 5.4. Gestão de Técnicos
+* **Permissão Requerida**: `ROLE_COORDENADOR` para criar. `GET` para qualquer autenticado.
 
 #### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
 * **Descrição**: Permite que um coordenador cadastre um novo técnico.
@@ -197,52 +234,37 @@ A seguir estão documentados todos os endpoints disponíveis na API.
     {
       "matricula": "tec001",
       "nome": "Professor Silva",
-      "senha": "senha123"
+      "senha": "senhaTecnico123"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do técnico cadastrado.
-
-#### `PUT /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
-* **Descrição**: Permite que um coordenador atualize um técnico.
-* **Corpo da Requisição (Exemplo)**:
-    ```json
-    {
-      "nome": "Técnico Atualizado",
-      "senha": "novaSenhaTecnico"
-    }
-    ```
-* **Resposta de Sucesso (200 OK)**: O objeto do técnico atualizado.
-
-#### `DELETE /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
-* **Descrição**: Permite que um coordenador delete um técnico (desde que não esteja em uma equipe).
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 #### `GET /api/tecnicos`
-* **Descrição**: Lista todos os técnicos cadastrados.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `UsuarioResponseDTO`.
+* **Descrição**: Lista todos os técnicos cadastrados de forma paginada.
+
+#### `GET /api/tecnicos/{matricula}`
+* **Descrição**: Busca um técnico específico pela matrícula.
 
 ---
 
-### 4.5. Gestão de Atletas e Equipes
+### 5.5. Gestão de Atletas e Equipes
+* **Permissão Requerida**: `ROLE_TECNICO`
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
-* **Descrição**: Permite que um técnico cadastre uma nova equipe com seus atletas.
+* **Descrição**: Permite que um técnico cadastre uma nova equipe.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
       "equipe": {
         "nome": "Os Invencíveis",
-        "curso": { "id": 1 },
-        "esporte": { "id": 1 }
+        "cursoId": 1,
+        "esporteId": 1
       },
       "matriculasAtletas": ["atl001", "atl002", "atl003"]
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto da equipe cadastrada.
 
 #### `DELETE /api/tecnicos/{matriculaTecnico}/equipes/{equipeId}`
-* **Descrição**: Permite que um técnico delete sua própria equipe (desde que a equipe não tenha partidas em um torneio).
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+* **Descrição**: Permite que um técnico delete sua própria equipe.
 
 #### `POST /api/tecnicos/{matriculaTecnico}/atletas`
 * **Descrição**: Permite que um técnico cadastre um novo atleta.
@@ -256,38 +278,27 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "senha": "senha123"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do atleta cadastrado.
-
-#### `PUT /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
-* **Descrição**: Permite que um técnico atualize os dados de um atleta.
-* **Corpo da Requisição (Exemplo)**:
-    ```json
-    {
-      "apelido": "Estrela",
-      "telefone": "79911112222"
-    }
-    ```
-* **Resposta de Sucesso (200 OK)**: O objeto do atleta atualizado.
-
-#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
-* **Descrição**: Permite que um técnico remova (desassocie) um atleta de sua equipe.
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
 
 #### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}/db`
-* **Descrição**: Permite que um técnico delete permanentemente um atleta do banco de dados (desde que o atleta não esteja em uma equipe e o técnico seja quem o cadastrou).
-* **Resposta de Sucesso (200 OK)**: Mensagem de confirmação.
+* **Descrição**: Deleta permanentemente um atleta do banco de dados.
 
 #### `GET /api/equipes`
-* **Descrição**: Lista todas as equipes.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `EquipeResponseDTO`.
+* **Descrição**: Lista todas as equipes de forma paginada.
+* **Permissão Requerida**: Qualquer usuário autenticado.
+
+#### `GET /api/equipes/{id}`
+* **Descrição**: Busca uma equipe específica pelo ID.
 
 #### `GET /api/atletas`
-* **Descrição**: Lista todos os atletas.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `AtletaResponseDTO`.
+* **Descrição**: Lista todos os atletas de forma paginada.
+
+#### `GET /api/atletas/{matricula}`
+* **Descrição**: Busca um atleta específico pela matrícula.
 
 ---
 
-### 4.6. Gestão de Torneios e Partidas
+### 5.6. Gestão de Torneios e Partidas
+* **Permissão Requerida**: `POST` exige `ROLE_ADMIN`. `GET` é público.
 
 #### `POST /api/torneios/iniciar`
 * **Descrição**: Inicia um torneio, criando os grupos e as partidas da fase inicial.
@@ -298,23 +309,23 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "categoria": "SUPERIOR"
     }
     ```
-* **Resposta de Sucesso (201 CREATED)**: O objeto do torneio criado.
 
 #### `POST /api/torneios/{torneioId}/avancar-fase`
 * **Descrição**: Avança o torneio para a próxima fase do mata-mata.
-* **Resposta de Sucesso (201 CREATED)**: Lista de novas partidas ou mensagem de campeão.
 
 #### `GET /api/torneios`
 * **Descrição**: Lista todos os torneios.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `TorneioResponseDTO`.
+
+#### `GET /api/torneios/{id}`
+* **Descrição**: Busca um torneio específico pelo ID.
 
 #### `GET /api/torneios/{torneioId}/partidas`
 * **Descrição**: Lista todas as partidas de um torneio específico.
-* **Resposta de Sucesso (200 OK)**: Uma lista de objetos `Partida`.
 
 ---
 
-### 4.7. Ações de Árbitros em Partidas
+### 5.7. Ações de Árbitros em Partidas
+* **Permissão Requerida**: `ROLE_ARBITRO`
 
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
 * **Descrição**: Permite que um árbitro registre o placar final de uma partida.
@@ -325,7 +336,6 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "placarB": 20
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
 
 #### `POST /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/wo`
 * **Descrição**: Permite que um árbitro registre uma vitória por W.O.
@@ -335,8 +345,5 @@ A seguir estão documentados todos os endpoints disponíveis na API.
       "equipeVencedoraId": 1
     }
     ```
-* **Resposta de Sucesso (200 OK)**: O objeto da partida atualizado.
-
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/reverter`
-* **Descrição**: Permite que um árbitro reverta o resultado de uma partida (normal ou W.O), retornando-a ao status "AGENDADA".
-* **Resposta de Sucesso (200 OK)**: O objeto da partida revertida.
+* **Descrição**: Reverte o resultado de uma partida (normal ou W.O), retornando-a ao status "AGENDADA".

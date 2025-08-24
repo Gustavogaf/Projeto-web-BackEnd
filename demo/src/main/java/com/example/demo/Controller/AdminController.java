@@ -7,6 +7,9 @@ import com.example.demo.Model.Coordenador;
 import com.example.demo.Model.Arbitro;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Service.AdminService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import jakarta.validation.Valid;
 
@@ -33,7 +36,7 @@ public class AdminController {
             coordenador.setMatricula(coordenadorDTO.getMatricula());
             coordenador.setNome(coordenadorDTO.getNome());
             coordenador.setSenha(coordenadorDTO.getSenha());
-            
+
             Coordenador novoCoordenador = adminService.cadastrarCoordenador(coordenador);
             return new ResponseEntity<>(new UsuarioResponseDTO(novoCoordenador), HttpStatus.CREATED);
         } catch (Exception e) {
@@ -42,11 +45,10 @@ public class AdminController {
     }
 
     @GetMapping("/coordenadores")
-    public ResponseEntity<List<UsuarioResponseDTO>> listarCoordenadores() {
-        List<Usuario> coordenadores = adminService.listarCoordenadores();
-        List<UsuarioResponseDTO> response = coordenadores.stream()
-                .map(UsuarioResponseDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<UsuarioResponseDTO>> listarCoordenadores(
+            @PageableDefault(size = 10, sort = { "nome" }) Pageable paginacao) {
+        Page<Usuario> coordenadores = adminService.listarCoordenadores(paginacao);
+        Page<UsuarioResponseDTO> response = coordenadores.map(UsuarioResponseDTO::new);
         return ResponseEntity.ok(response);
     }
 

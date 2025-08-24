@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,11 +25,10 @@ public class AtletaController {
     private AtletaService atletaService;
 
     @GetMapping
-    public ResponseEntity<List<AtletaResponseDTO>> listarAtletas() {
-        List<Atleta> atletas = atletaService.listarTodos();
-        List<AtletaResponseDTO> response = atletas.stream()
-                .map(AtletaResponseDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<AtletaResponseDTO>> listarAtletas(
+            @PageableDefault(size = 10, sort = { "nome" }) Pageable paginacao) {
+        Page<Atleta> atletas = atletaService.listarTodos(paginacao);
+        Page<AtletaResponseDTO> response = atletas.map(AtletaResponseDTO::new);
         return ResponseEntity.ok(response);
     }
 

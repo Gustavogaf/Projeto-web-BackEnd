@@ -9,6 +9,8 @@ import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,8 +106,8 @@ public class TecnicoService {
         return usuarioRepository.save(novoAtleta);
     }
 
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findByTipo(TipoUsuario.TECNICO);
+    public Page<Usuario> listarTodos(Pageable paginacao) {
+        return usuarioRepository.findByTipo(TipoUsuario.TECNICO, paginacao);
     }
 
     public Usuario buscarPorMatricula(String matricula) throws Exception {

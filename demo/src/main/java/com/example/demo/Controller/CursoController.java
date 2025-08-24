@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.example.demo.Controller.dto.CursoRequestDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,11 +31,10 @@ public class CursoController {
     private CursoService cursoService;
 
     @GetMapping
-    public ResponseEntity<List<CursoResponseDTO>> listarCursos() {
-        List<Curso> cursos = cursoService.listarTodos();
-        List<CursoResponseDTO> response = cursos.stream()
-                .map(CursoResponseDTO::new)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<CursoResponseDTO>> listarCursos(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
+        Page<Curso> cursosPaginados = cursoService.listarTodos(paginacao);
+        // Usamos o método .map() da Page para converter cada Curso para um CursoResponseDTO
+        Page<CursoResponseDTO> response = cursosPaginados.map(CursoResponseDTO::new);
         return ResponseEntity.ok(response);
     }
 
