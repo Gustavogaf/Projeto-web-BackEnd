@@ -58,6 +58,7 @@ A aplicação estará disponível em `http://localhost:8080`.
 A maioria dos endpoints desta API é protegida e requer um token de autenticação para ser acessada. O sistema utiliza **JSON Web Tokens (JWT)**.
 
 ### `POST /api/auth/login`
+
 * **Descrição**: Autentica um usuário (Admin, Coordenador, Técnico, Árbitro ou Atleta) e retorna um token JWT. Este é um dos poucos endpoints públicos.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -78,8 +79,7 @@ A maioria dos endpoints desta API é protegida e requer um token de autenticaç�
 Após obter o token, você deve incluí-lo em todas as chamadas para endpoints protegidos, utilizando o cabeçalho `Authorization` com o prefixo `Bearer`.
 
 **Exemplo de Cabeçalho:**
-
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZWMwMDEiLCJpYXQiOjE3MjQ0NDg...
+`Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZWMwMDEiLCJpYXQiOjE3MjQ0NDg...`
 
 Qualquer tentativa de acessar um endpoint protegido sem um token válido ou sem a permissão (`role`) necessária resultará em uma resposta `403 Forbidden`.
 
@@ -88,6 +88,7 @@ Qualquer tentativa de acessar um endpoint protegido sem um token válido ou sem 
 ### Paginação
 
 Todos os endpoints `GET` que retornam listas de recursos são paginados. Você pode controlar a paginação usando os seguintes parâmetros na URL:
+
 * `page`: O número da página que você deseja (começando em 0).
 * `size`: O número de itens por página.
 * `sort`: O campo pelo qual você deseja ordenar, seguido de `,asc` ou `,desc`.
@@ -97,9 +98,11 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
 ---
 
 ### 5.1. Gestão de Administradores (`/api/admin`)
+
 * **Permissão Requerida**: `ROLE_ADMIN`
 
 #### `POST /api/admin/coordenadores`
+
 * **Descrição**: Cadastra um novo coordenador.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -111,12 +114,15 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `GET /api/admin/coordenadores`
+
 * **Descrição**: Lista todos os coordenadores de forma paginada.
 
 #### `GET /api/admin/coordenadores/{matricula}`
+
 * **Descrição**: Busca um coordenador específico pela matrícula.
 
 #### `PUT /api/admin/coordenadores/{matricula}`
+
 * **Descrição**: Atualiza os dados de um coordenador.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -127,9 +133,11 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `DELETE /api/admin/coordenadores/{matricula}`
+
 * **Descrição**: Deleta um coordenador.
 
 #### `POST /api/admin/arbitros`
+
 * **Descrição**: Cadastra um novo árbitro.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -139,10 +147,13 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
       "senha": "senhaArbitro123"
     }
     ```
+
 #### `GET /api/admin/arbitros/{matricula}`
+
 * **Descrição**: Busca um árbitro específico pela matrícula.
 
 #### `PUT /api/admin/arbitros/{matricula}`
+
 * **Descrição**: Atualiza os dados de um árbitro.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -153,14 +164,17 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `DELETE /api/admin/arbitros/{matricula}`
+
 * **Descrição**: Deleta um árbitro.
 
 ---
 
 ### 5.2. Gestão de Cursos (`/api/cursos`)
+
 * **Permissão Requerida**: `POST`, `PUT`, `DELETE` exigem autenticação. `GET` é público.
 
 #### `POST /api/cursos`
+
 * **Descrição**: Cadastra um novo curso.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -171,28 +185,36 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `GET /api/cursos`
+
 * **Descrição**: Lista todos os cursos de forma paginada.
 
 #### `GET /api/cursos/{id}`
+
 * **Descrição**: Busca um curso específico pelo ID.
 
 #### `PUT /api/cursos/{id}`
+
 * **Descrição**: Atualiza um curso.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
-      "nome": "Ciência da Computação"
+      "nome": "Ciência da Computação",
+      "categoria": "SUPERIOR"
     }
     ```
+
 #### `DELETE /api/cursos/{id}`
+
 * **Descrição**: Deleta um curso.
 
 ---
 
 ### 5.3. Gestão de Esportes (`/api/esportes`)
+
 * **Permissão Requerida**: `POST`, `PUT`, `DELETE` exigem autenticação. `GET` é público.
 
 #### `POST /api/esportes`
+
 * **Descrição**: Cadastra um novo esporte.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -204,12 +226,15 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `GET /api/esportes`
+
 * **Descrição**: Lista todos os esportes de forma paginada.
 
 #### `GET /api/esportes/{id}`
+
 * **Descrição**: Busca um esporte específico pelo ID.
 
 #### `PUT /api/esportes/{id}`
+
 * **Descrição**: Atualiza um esporte.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -220,14 +245,17 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `DELETE /api/esportes/{id}`
+
 * **Descrição**: Deleta um esporte.
 
 ---
 
-### 5.4. Gestão de Técnicos
-* **Permissão Requerida**: `ROLE_COORDENADOR` para criar. `GET` para qualquer autenticado.
+### 5.4. Gestão de Coordenadores (`/api/coordenadores`)
+
+* **Permissão Requerida**: `ROLE_COORDENADOR`
 
 #### `POST /api/coordenadores/{matriculaCoordenador}/tecnicos`
+
 * **Descrição**: Permite que um coordenador cadastre um novo técnico.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -238,32 +266,29 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     }
     ```
 
-#### `GET /api/tecnicos`
-* **Descrição**: Lista todos os técnicos cadastrados de forma paginada.
+#### `PUT /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
 
-#### `GET /api/tecnicos/{matricula}`
-* **Descrição**: Busca um técnico específico pela matrícula.
-
-#### `PUT /api/tecnicos/{matricula}`
-* **Descrição**: Atualiza um técnico específico pela matrícula.
+* **Descrição**: Permite que um coordenador atualize um técnico.
 * **Corpo da Requisição (Exemplo)**:
     ```json
-      {
-        "nome": "Técnico Atualizado",
-        "senha": "novaSenhaTecnico"
-      }
+    {
+      "nome": "Técnico Nome Novo",
+      "senha": "novaSenhaParaTecnico"
+    }
     ```
 
-#### `DELETE /api/tecnicos/{matricula}`
-* **Descrição**: Deleta um técnico específico pela matrícula.
+#### `DELETE /api/coordenadores/{matriculaCoordenador}/tecnicos/{matriculaTecnico}`
+
+* **Descrição**: Permite que um coordenador delete um técnico.
 
 ---
 
-### 5.5. Gestão de Atletas e Equipes
-* **Permissão Requerida**: `ROLE_TECNICO`
+### 5.5. Gestão de Técnicos (`/api/tecnicos`)
 
 #### `POST /api/tecnicos/{matriculaTecnico}/equipes`
-* **Descrição**: Permite que um técnico cadastre uma nova equipe.
+
+* **Permissão Requerida**: `ROLE_TECNICO`
+* **Descrição**: Permite que um técnico cadastre uma nova equipe completa.
 * **Corpo da Requisição (Exemplo)**:
     ```json
     {
@@ -277,9 +302,13 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `DELETE /api/tecnicos/{matriculaTecnico}/equipes/{equipeId}`
+
+* **Permissão Requerida**: `ROLE_TECNICO`
 * **Descrição**: Permite que um técnico delete sua própria equipe.
 
 #### `POST /api/tecnicos/{matriculaTecnico}/atletas`
+
+* **Permissão Requerida**: `ROLE_TECNICO`
 * **Descrição**: Permite que um técnico cadastre um novo atleta.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -292,28 +321,68 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     }
     ```
 
-#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}/db`
-* **Descrição**: Deleta permanentemente um atleta do banco de dados.
+#### `PUT /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
 
-#### `GET /api/equipes`
-* **Descrição**: Lista todas as equipes de forma paginada.
+* **Permissão Requerida**: `ROLE_TECNICO`
+* **Descrição**: Atualiza os dados de um atleta.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+    {
+      "apelido": "O Mágico",
+      "telefone": "79888889999",
+      "senha": "novaSenhaForte"
+    }
+    ```
+
+#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}`
+
+* **Permissão Requerida**: `ROLE_TECNICO`
+* **Descrição**: Remove um atleta de uma equipe, mas não o deleta do sistema.
+
+#### `DELETE /api/tecnicos/{matriculaTecnico}/atletas/{matriculaAtleta}/db`
+
+* **Permissão Requerida**: `ROLE_TECNICO`
+* **Descrição**: Deleta permanentemente um atleta do banco de dados (só é possível se ele não estiver em nenhuma equipe).
+
+#### `GET /api/tecnicos`
+
+* **Permissão Requerida**: Qualquer usuário autenticado.
+* **Descrição**: Lista todos os técnicos cadastrados de forma paginada.
+
+#### `GET /api/tecnicos/{matricula}`
+
+* **Permissão Requerida**: Qualquer usuário autenticado.
+* **Descrição**: Busca um técnico específico pela matrícula.
+
+---
+
+### 5.6. Consulta de Atletas e Equipes
+
 * **Permissão Requerida**: Qualquer usuário autenticado.
 
+#### `GET /api/equipes`
+
+* **Descrição**: Lista todas as equipes de forma paginada.
+
 #### `GET /api/equipes/{id}`
+
 * **Descrição**: Busca uma equipe específica pelo ID.
 
 #### `GET /api/atletas`
+
 * **Descrição**: Lista todos os atletas de forma paginada.
 
 #### `GET /api/atletas/{matricula}`
+
 * **Descrição**: Busca um atleta específico pela matrícula.
 
 ---
 
-### 5.6. Gestão de Torneios e Partidas
-* **Permissão Requerida**: `POST` exige `ROLE_ADMIN`. `GET` é público.
+### 5.7. Gestão de Torneios e Partidas
 
 #### `POST /api/torneios/iniciar`
+
+* **Permissão Requerida**: `ROLE_ADMIN`
 * **Descrição**: Inicia um torneio, criando os grupos e as partidas da fase inicial.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -324,23 +393,33 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `POST /api/torneios/{torneioId}/avancar-fase`
-* **Descrição**: Avança o torneio para a próxima fase do mata-mata.
+
+* **Permissão Requerida**: Autenticado (geralmente `ROLE_ADMIN`)
+* **Descrição**: Avança o torneio para a próxima fase do mata-mata, gerando as novas partidas.
 
 #### `GET /api/torneios`
-* **Descrição**: Lista todos os torneios.
+
+* **Permissão Requerida**: Público.
+* **Descrição**: Lista todos os torneios criados.
 
 #### `GET /api/torneios/{id}`
-* **Descrição**: Busca um torneio específico pelo ID.
+
+* **Permissão Requerida**: Público.
+* **Descrição**: Busca um torneio específico pelo ID, incluindo seus grupos.
 
 #### `GET /api/torneios/{torneioId}/partidas`
+
+* **Permissão Requerida**: Público.
 * **Descrição**: Lista todas as partidas de um torneio específico.
 
 ---
 
-### 5.7. Ações de Árbitros em Partidas
+### 5.8. Ações de Árbitros em Partidas (`/api/arbitros`)
+
 * **Permissão Requerida**: `ROLE_ARBITRO`
 
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/resultado`
+
 * **Descrição**: Permite que um árbitro registre o placar final de uma partida.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -351,6 +430,7 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
     ```
 
 #### `POST /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/wo`
+
 * **Descrição**: Permite que um árbitro registre uma vitória por W.O.
 * **Corpo da Requisição (Exemplo)**:
     ```json
@@ -358,5 +438,7 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
       "equipeVencedoraId": 1
     }
     ```
+
 #### `PUT /api/arbitros/{matriculaArbitro}/partidas/{partidaId}/reverter`
-* **Descrição**: Reverte o resultado de uma partida (normal ou W.O), retornando-a ao status "AGENDADA".
+
+* **Descrição**: Reverte o resultado de uma partida (normal ou W.O), retornando-a ao status "AGENDADA" e corrigindo a pontuação das equipes.
