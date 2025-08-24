@@ -43,6 +43,16 @@ public class EsporteController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarEsportePorId(@PathVariable Long id) {
+        try {
+            Esporte esporte = esporteService.buscarPorId(id);
+            return ResponseEntity.ok(new EsporteResponseDTO(esporte));
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizarEsporte(@PathVariable Long id, @RequestBody Esporte esporteDetails) {
         try {

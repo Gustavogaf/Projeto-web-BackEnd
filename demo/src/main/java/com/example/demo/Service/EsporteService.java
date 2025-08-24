@@ -30,8 +30,8 @@ public class EsporteService {
     }
 
     public Page<Esporte> listarTodos(Pageable paginacao) {
-    return esporteRepository.findAll(paginacao);
-}
+        return esporteRepository.findAll(paginacao);
+    }
 
     public Esporte atualizarEsporte(Long id, Esporte esporteDetails) throws Exception {
         Esporte esporte = esporteRepository.findById(id)
@@ -53,6 +53,11 @@ public class EsporteService {
         }
 
         return esporteRepository.save(esporte);
+    }
+
+    public Esporte buscarPorId(Long id) throws Exception {
+        return esporteRepository.findById(id)
+                .orElseThrow(() -> new Exception("Esporte com o ID " + id + " não encontrado."));
     }
 
     public void deletarEsporte(Long id) throws Exception {
