@@ -7,6 +7,7 @@ import com.example.demo.Repository.EsporteRepository;
 import com.example.demo.Repository.PartidaRepository;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,8 @@ public class TecnicoService {
     private EsporteRepository esporteRepository;
     @Autowired
     private PartidaRepository partidaRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public Equipe cadastrarEquipe(String matriculaTecnico, Equipe equipeInfoRequest, List<String> matriculasAtletas)
@@ -101,6 +104,9 @@ public class TecnicoService {
         if (usuarioRepository.existsById(novoAtleta.getMatricula())) {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoAtleta.getMatricula());
         }
+        
+        novoAtleta.setSenha(passwordEncoder.encode(novoAtleta.getSenha()));
+
         novoAtleta.setTipo(TipoUsuario.ATLETA);
         novoAtleta.setCadastradoPor(tecnico);
         return usuarioRepository.save(novoAtleta);

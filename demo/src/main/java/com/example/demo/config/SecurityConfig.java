@@ -15,8 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -27,42 +25,45 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
-    
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
+    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder)
+            throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http
+                .getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(authUserDetailsService)
                 .passwordEncoder(passwordEncoder);
         return authenticationManagerBuilder.build();
     }
 
-    
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize
-                // Endpoints Públicos
-                .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/esportes/**", "/api/cursos/**", "/api/torneios/**", "/api/partidas/**").permitAll()
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+                        // Endpoints Públicos
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/esportes/**", "/api/cursos/**", "/api/torneios/**",
+                                "/api/partidas/**")
+                        .permitAll()
 
-                // Endpoints de ADMIN
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Permite que qualquer usuário autenticado veja os técnicos
+                        .requestMatchers(HttpMethod.GET, "/api/tecnicos", "/api/tecnicos/**").authenticated()
 
-                // Endpoints de COORDENADOR
-                .requestMatchers("/api/coordenadores/**").hasRole("COORDENADOR")
-                
-                // Endpoints de TECNICO
-                .requestMatchers("/api/tecnicos/**").hasRole("TECNICO")
+                        // Endpoints de ADMIN
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                // Endpoints de ARBITRO
-                .requestMatchers("/api/arbitros/**").hasRole("ARBITRO")
+                        // Endpoints de COORDENADOR
+                        .requestMatchers("/api/coordenadores/**").hasRole("COORDENADOR")
 
-                .anyRequest().authenticated()
-            ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Endpoints de TECNICO
+                        .requestMatchers("/api/tecnicos/**").hasRole("TECNICO")
+
+                        // Endpoints de ARBITRO
+                        .requestMatchers("/api/arbitros/**").hasRole("ARBITRO")
+
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

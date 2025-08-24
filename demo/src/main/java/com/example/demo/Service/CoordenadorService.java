@@ -6,6 +6,7 @@ import com.example.demo.Model.Usuario;
 import com.example.demo.Repository.EquipeRepository;
 import com.example.demo.Repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,6 +19,9 @@ public class CoordenadorService {
 
     @Autowired
     private EquipeRepository equipeRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; 
 
     public Tecnico cadastrarTecnico(String matriculaCoordenador, Tecnico novoTecnico) throws Exception {
         // 1. VERIFICAR SE O SOLICITANTE É UM COORDENADOR
@@ -34,6 +38,8 @@ public class CoordenadorService {
         if (usuarioRepository.existsById(novoTecnico.getMatricula())) {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoTecnico.getMatricula());
         }
+
+        novoTecnico.setSenha(passwordEncoder.encode(novoTecnico.getSenha()));
 
         // 3. DEFINIR O TIPO E SALVAR O NOVO TÉCNICO
         novoTecnico.setTipo(TipoUsuario.TECNICO);

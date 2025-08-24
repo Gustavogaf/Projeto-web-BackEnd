@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,13 +20,20 @@ public class AdminService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public Coordenador cadastrarCoordenador(Coordenador novoCoordenador) throws Exception {
         // 1. VERIFICAR SE A MATRÍCULA JÁ ESTÁ EM USO
         if (usuarioRepository.existsById(novoCoordenador.getMatricula())) {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoCoordenador.getMatricula());
         }
 
-        // 2. DEFINIR O TIPO E SALVAR O NOVO COORDENADOR
+        // 2. Criptografe a senha antes de salvar
+        novoCoordenador.setSenha(passwordEncoder.encode(novoCoordenador.getSenha()));
+
+
+        // 3. DEFINIR O TIPO E SALVAR O NOVO COORDENADOR
         novoCoordenador.setTipo(TipoUsuario.COORDENADOR);
         return usuarioRepository.save(novoCoordenador);
     }
@@ -79,6 +87,9 @@ public class AdminService {
         if (usuarioRepository.existsById(novoArbitro.getMatricula())) {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoArbitro.getMatricula());
         }
+
+        // Criptografa a senha 
+        novoArbitro.setSenha(passwordEncoder.encode(novoArbitro.getSenha()));
         novoArbitro.setTipo(TipoUsuario.ARBITRO);
         return usuarioRepository.save(novoArbitro);
     }
