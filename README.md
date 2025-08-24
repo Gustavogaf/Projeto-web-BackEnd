@@ -244,6 +244,19 @@ Todos os endpoints `GET` que retornam listas de recursos são paginados. Você p
 #### `GET /api/tecnicos/{matricula}`
 * **Descrição**: Busca um técnico específico pela matrícula.
 
+#### `PUT /api/tecnicos/{matricula}`
+* **Descrição**: Atualiza um técnico específico pela matrícula.
+* **Corpo da Requisição (Exemplo)**:
+    ```json
+      {
+        "nome": "Técnico Atualizado",
+        "senha": "novaSenhaTecnico"
+      }
+    ```
+
+#### `DELETE /api/tecnicos/{matricula}`
+* **Descrição**: Deleta um técnico específico pela matrícula.
+
 ---
 
 ### 5.5. Gestão de Atletas e Equipes
