@@ -47,6 +47,8 @@ public class SecurityConfig {
                                 "/api/partidas/**")
                         .permitAll()
 
+                        .requestMatchers("/api/debug/**").authenticated()
+
                         // Permite que qualquer usuário autenticado veja os técnicos
                         .requestMatchers(HttpMethod.GET, "/api/tecnicos", "/api/tecnicos/**").authenticated()
 
