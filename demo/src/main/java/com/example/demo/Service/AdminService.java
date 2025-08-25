@@ -32,7 +32,6 @@ public class AdminService {
         // 2. Criptografe a senha antes de salvar
         novoCoordenador.setSenha(passwordEncoder.encode(novoCoordenador.getSenha()));
 
-
         // 3. DEFINIR O TIPO E SALVAR O NOVO COORDENADOR
         novoCoordenador.setTipo(TipoUsuario.COORDENADOR);
         return usuarioRepository.save(novoCoordenador);
@@ -88,7 +87,7 @@ public class AdminService {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoArbitro.getMatricula());
         }
 
-        // Criptografa a senha 
+        // Criptografa a senha
         novoArbitro.setSenha(passwordEncoder.encode(novoArbitro.getSenha()));
         novoArbitro.setTipo(TipoUsuario.ARBITRO);
         return usuarioRepository.save(novoArbitro);
@@ -112,6 +111,10 @@ public class AdminService {
         return (Arbitro) usuarioRepository.findById(matricula)
                 .filter(u -> u.getTipo() == TipoUsuario.ARBITRO)
                 .orElseThrow(() -> new Exception("Árbitro com a matrícula " + matricula + " não encontrado."));
+    }
+
+    public Page<Usuario> listarArbitros(Pageable paginacao) {
+        return usuarioRepository.findByTipo(TipoUsuario.ARBITRO, paginacao);
     }
 
     public void deletarArbitro(String matricula) throws Exception {

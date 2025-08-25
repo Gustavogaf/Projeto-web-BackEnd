@@ -109,6 +109,14 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/arbitros")
+    public ResponseEntity<Page<UsuarioResponseDTO>> listarArbitros(
+            @PageableDefault(size = 10, sort = { "nome" }) Pageable paginacao) {
+        Page<Usuario> arbitros = adminService.listarArbitros(paginacao);
+        Page<UsuarioResponseDTO> response = arbitros.map(UsuarioResponseDTO::new);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/arbitros/{matricula}")
     public ResponseEntity<?> atualizarArbitro(@PathVariable String matricula, @RequestBody Arbitro detalhesArbitro) {
         try {

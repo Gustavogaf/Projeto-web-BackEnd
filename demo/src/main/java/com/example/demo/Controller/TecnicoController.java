@@ -65,6 +65,31 @@ public class TecnicoController {
         }
     }
 
+    @PutMapping("/{matriculaTecnico}/equipes/{equipeId}")
+    public ResponseEntity<?> atualizarEquipe(
+            @PathVariable String matriculaTecnico,
+            @PathVariable Long equipeId,
+            @Valid @RequestBody CadastroEquipeRequest request) {
+
+        try {
+            // Reutilizamos o DTO de cadastro para a atualização
+            Equipe equipeInfo = new Equipe();
+            equipeInfo.setNome(request.getEquipe().getNome());
+            // Curso e Esporte não são atualizáveis por aqui, eles são definidos na criação
+            // da equipe
+
+            Equipe equipeAtualizada = tecnicoService.atualizarEquipe(
+                    matriculaTecnico,
+                    equipeId,
+                    equipeInfo,
+                    request.getMatriculasAtletas());
+
+            return new ResponseEntity<>(new EquipeResponseDTO(equipeAtualizada), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<Page<UsuarioResponseDTO>> listarTecnicos(
             @PageableDefault(size = 10, sort = { "nome" }) Pageable paginacao) {

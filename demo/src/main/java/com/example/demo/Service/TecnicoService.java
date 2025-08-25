@@ -96,6 +96,60 @@ public class TecnicoService {
         return equipeRepository.findById(equipeSalva.getId()).get();
     }
 
+    @Transactional
+    public Equipe atualizarEquipe(String matriculaTecnico, Long equipeId, Equipe equipeInfoRequest,
+            List<String> novasMatriculasAtletas) throws Exception {
+        // 1. Validações
+        Equipe equipe = equipeRepository.findById(equipeId)
+                .orElseThrow(() -> new Exception("Equipe com o ID " + equipeId + " não encontrada."));
+
+        if (!equipe.getTecnico().getMatricula().equals(matriculaTecnico)) {
+            throw new Exception("Você não tem permissão para editar esta equipe.");
+        }
+
+        Esporte esporte = equipe.getEsporte(); // Pega o esporte da equipe existente
+        if (novasMatriculasAtletas.size() < esporte.getMinAtletas()
+                || novasMatriculasAtletas.size() > esporte.getMaxAtletas()) {
+            throw new Exception(
+                    "A quantidade de atletas (" + novasMatriculasAtletas.size() + ") para " + esporte.getNome() +
+                            " deve ser entre " + esporte.getMinAtletas() + " e " + esporte.getMaxAtletas() + ".");
+        }
+
+        // 2. Atualiza o nome da equipe
+        equipe.setNome(equipeInfoRequest.getNome());
+
+        // 3. Gerencia os atletas
+        // Remove a associação de todos os atletas atuais da equipe
+        for (Atleta atleta : new ArrayList<>(equipe.getAtletas())) {
+            atleta.setEquipe(null);
+            usuarioRepository.save(atleta);
+        }
+        equipe.getAtletas().clear(); // Limpa a lista na entidade equipe
+
+        // Associa os novos atletas selecionados
+        List<Atleta> novosAtletas = new ArrayList<>();
+        for (String matriculaAtleta : novasMatriculasAtletas) {
+            Atleta atleta = (Atleta) usuarioRepository.findById(matriculaAtleta)
+                    .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
+                    .orElseThrow(
+                            () -> new Exception("Atleta com a matrícula '" + matriculaAtleta + "' não encontrado."));
+
+            // Verifica se o atleta já não pertence a outra equipe
+            if (atleta.getEquipe() != null && !atleta.getEquipe().getId().equals(equipeId)) {
+                throw new Exception("O atleta " + atleta.getNome() + " já pertence a outra equipe.");
+            }
+
+            atleta.setEquipe(equipe);
+            novosAtletas.add(atleta);
+        }
+
+        // Adiciona a nova lista de atletas à equipe
+        equipe.getAtletas().addAll(novosAtletas);
+
+        // 4. Salva a equipe atualizada
+        return equipeRepository.save(equipe);
+    }
+
     public Atleta cadastrarAtleta(String matriculaTecnico, Atleta novoAtleta) throws Exception {
         Tecnico tecnico = (Tecnico) usuarioRepository.findById(matriculaTecnico)
                 .filter(u -> u.getTipo() == TipoUsuario.TECNICO)
@@ -104,7 +158,7 @@ public class TecnicoService {
         if (usuarioRepository.existsById(novoAtleta.getMatricula())) {
             throw new Exception("Já existe um usuário cadastrado com a matrícula: " + novoAtleta.getMatricula());
         }
-        
+
         novoAtleta.setSenha(passwordEncoder.encode(novoAtleta.getSenha()));
 
         novoAtleta.setTipo(TipoUsuario.ATLETA);
@@ -133,7 +187,9 @@ public class TecnicoService {
         Atleta atleta = (Atleta) usuarioRepository.findById(matriculaAtleta)
                 .filter(u -> u.getTipo() == TipoUsuario.ATLETA)
                 .orElseThrow(() -> new Exception("Atleta com a matrícula " + matriculaAtleta + " não encontrado."));
-
+        if (detalhesAtleta.getNome() != null && !detalhesAtleta.getNome().isBlank()) {
+            atleta.setNome(detalhesAtleta.getNome());
+        }
         if (detalhesAtleta.getApelido() != null) {
             atleta.setApelido(detalhesAtleta.getApelido());
         }
@@ -141,7 +197,7 @@ public class TecnicoService {
             atleta.setTelefone(detalhesAtleta.getTelefone());
         }
         if (detalhesAtleta.getSenha() != null && !detalhesAtleta.getSenha().isBlank()) {
-            atleta.setSenha(detalhesAtleta.getSenha());
+            atleta.setSenha(passwordEncoder.encode(detalhesAtleta.getSenha()));
         }
 
         return usuarioRepository.save(atleta);
